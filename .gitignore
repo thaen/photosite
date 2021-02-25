@@ -3,5 +3,5 @@ site/
 __pycache__
 *.jpg
 *.pdf
-static/
-galleries/
+static/*
+galleries/*
