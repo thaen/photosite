@@ -5,3 +5,4 @@ __pycache__
 *.pdf
 static/*
 galleries/*
+.DS_Store

@@ -1,117 +1,53 @@
-<HTML>
-  <HEAD>
-    <TITLE>Hello.</TITLE>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <STYLE>
-      .header {
-	  font-size:130%;
-	  font-weight: bold;
-      }
-      @media screen and (min-width:0px) and (max-width:440px) {
-	  .hide-mobile {
-	      display:none !important;
-	  }
-	  .photostream img {
-	      height: 100px;
-	      width: auto;
-	  }
-      }
-      @media screen and (min-width:401px) {
-      }
-      .row {
-	  display: flex;
-	  flex-direction: row;
-	  flex-wrap: wrap;
-	  width: 100%;
-      }
-      .column {
-	  display: flex;
-	  flex-direction: column;
-	  flex-basis: 100%;
-	  flex: 1;
-      }
-      .photostream {
-	  width: 50%;
-      }
-
-      UL {
-	  display: flex;
-          flex-wrap: wrap;
-	  list-style-type: none;
-	  margin: 0;
-	  padding: 0;
-	  overflow: hidden;
-      }
-      LI {
-	  padding: 1px 0px 0px 1px;
-	  flex-grow:1;
-      }
-      LI:last-child {
-	  flex-grow: 10;
-      }                                                                                                                                             
-      .photostream img {
-	  max-height: 100%;
-	  min-width: 100%;
-	  object-fit: cover;
-	  vertical-align: bottom;
-      }  
-      .padded {
-	  padding: 10px;
-      }
-      
-    </STYLE>
-  </HEAD>
-  <BODY style="padding:0px; margin:0px;">
-    <DIV class="row">
-      <DIV class="photostream">
-	<A class=header HREF="photostream/">
-	  <UL>
-	    {% for photo in photos %}
-	    <LI><IMG SRC="photostream/thumbnails/{{ photo.name }}.jpg" loading="lazy" class="galthumb" width="{{ photo.width}}" height="{{ photo.height }}" /></LI>
-	    {% endfor %}
-	    <LI></LI>
-	  </UL>
-	</A>
-      </DIV>
-      <DIV class="column">
-	<DIV class="padded">
-	  <SPAN class=header>Photos.</SPAN><BR/>
-	  I still write HTML like it's 1999. I may try to "learn" things as I do this, like how the modern web works.<BR/>
-	  <A HREF="/2019_book_photos/">2019 book photos</A><BR/>
-	  <A HREF="/2018_book_photos/">2018 book photos</A><BR/>
-	  <A HREF="/2017_book_photos/">2017 book photos</A><BR/>
-	  <A HREF="/2016_book_photos/">2016 book photos</A><BR/>
-	  <A HREF="/2015_book_photos/">2015 book photos</A><BR/>
-	</DIV>
-
-	<DIV style="background-color:#eee; text-align:left;" class="padded">
-	  <SPAN class=header>Keepsakes.</SPAN><BR/>
-	  <A HREF="/static/ethan_santa_letter.html">ethan's santa letter</A><br/>
-	  <A HREF="/static/to_my_unborn_child.html">to my unborn child</A>
-	</DIV>
-
-	<DIV class="padded">
-	  <SPAN class=header>Blog.</SPAN><BR/>
-	  <A HREF="/static/blog.html">Blog</A>
-	</DIV>
-      </DIV>
-
-      <DIV class="column hide-mobile">
-	<DIV class="padded">
-	  <SPAN class=header>Books.</SPAN><BR/>
-	  PDF book links. There are VERY LARGE, don't download them on a phone.<br/>
-	  <A HREF="/static/pdfs/2019_book.pdf">2019 book PDF version</A><BR/>
-	  <A HREF="/static/pdfs/2018_book.pdf">2018 book PDF version</A><BR/>
-	  <A HREF="/static/pdfs/2017_book.pdf">2017 book PDF version</A><BR/>
-	  <A HREF="/static/pdfs/2016_book.pdf">2016 book PDF version</A><BR/>
-	</DIV>
-
-	<DIV class="padded">
-	  <SPAN class=header>New.</SPAN><BR/>  I dramatically changed
-	  the Photostream layout to remove the use of Javascript,
-	  which I hate. I added a Photostream to the home page.
-	</DIV>
-      </DIV>
+{% include 'head.html' %}
+<DIV class="row">
+  <DIV class="photostream">
+    <A class=header HREF="photostream/">
+      <UL>
+	{% for photo in photos %}
+	<LI><IMG SRC="photostream/thumbnails/{{ photo.name }}.jpg" loading="lazy" class="galthumb" width="{{ photo.width}}" height="{{ photo.height }}" /></LI>
+	{% endfor %}
+	<LI></LI>
+      </UL>
+    </A>
+  </DIV>
+  <DIV class="column">
+    <DIV class="padded">
+      <SPAN class=header>Photos.</SPAN><BR/>
+      I still write HTML like it's 1999. I may try to "learn" things as I do this, like how the modern web works.<BR/>
+      <A HREF="/2019_book_photos/">2019 book photos</A><BR/>
+      <A HREF="/2018_book_photos/">2018 book photos</A><BR/>
+      <A HREF="/2017_book_photos/">2017 book photos</A><BR/>
+      <A HREF="/2016_book_photos/">2016 book photos</A><BR/>
+      <A HREF="/2015_book_photos/">2015 book photos</A><BR/>
     </DIV>
-  </BODY>
-</HTML>
+    
+    <DIV style="background-color:#eee; text-align:left;" class="padded">
+      <SPAN class=header>Keepsakes.</SPAN><BR/>
+      <A HREF="/static/ethan_santa_letter.html">ethan's santa letter</A><br/>
+      <A HREF="/static/to_my_unborn_child.html">to my unborn child</A>
+    </DIV>
+    
+    <DIV class="padded">
+      <SPAN class=header>Blog.</SPAN><BR/>
+      <A HREF="/static/blog.html">Blog</A>
+    </DIV>
+  </DIV>
+  
+  <DIV class="column hide-mobile">
+    <DIV class="padded">
+      <SPAN class=header>Books.</SPAN><BR/>
+      PDF book links. There are VERY LARGE, don't download them on a phone.<br/>
+      <A HREF="/static/pdfs/2019_book.pdf">2019 book PDF version</A><BR/>
+      <A HREF="/static/pdfs/2018_book.pdf">2018 book PDF version</A><BR/>
+      <A HREF="/static/pdfs/2017_book.pdf">2017 book PDF version</A><BR/>
+      <A HREF="/static/pdfs/2016_book.pdf">2016 book PDF version</A><BR/>
+    </DIV>
+    
+    <DIV class="padded">
+      <SPAN class=header>New.</SPAN><BR/>  I dramatically changed
+      the Photostream layout to remove the use of Javascript,
+      which I hate. I added a Photostream to the home page.
+    </DIV>
+  </DIV>
+</DIV>
+{% include 'foot.html' %}

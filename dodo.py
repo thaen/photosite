@@ -1,10 +1,27 @@
+'''
+This is a build script for a website.  Its job is to populate the
+build directory (site/) with the built website, suitable for uploading
+to a place where it will be served as web content.
+
+This parallelizes well, since generating thumbnails and copying large
+files is highly parallelizabl.
+
+However, there are a lot of dependencies in the artifacts.  I find
+this to be a fascinating problem because I see no way out of it:
+index.html needs to link to the galleries, meaning an author has to
+understand that.  Theoretically you could give the author of
+/index.html something a level of indirection, like a structure to loop
+over, but this incurs logic here (to build the list) and pain on the
+author (to understand it).  It seems better overall to me to keep this
+file as small as possible.
+'''
+
 from glob import glob
 import os
 import sys
 
 from jinja2 import Environment, FileSystemLoader
 jenv = Environment(loader=FileSystemLoader('templates'))
-
 
 def _mkdir(targets):
     for target in targets:
@@ -22,7 +39,13 @@ def _thumbpath(original):
     path = original.replace('galleries', 'site')
     return os.path.join(os.path.dirname(path), 'thumbnails', os.path.basename(path))
 
+def dirsonly(L):
+    return filter(lambda i: os.path.isdir(i), L)
+
 def task_larges():
+    '''
+    Copy original photos into the corresponding directory in the site/.
+    '''
     for original in glob('galleries/*/*jpg'):
         largepath = _largepath(original)
         yield {
@@ -32,6 +55,9 @@ def task_larges():
             'actions': [_mkdir, 'cp {} {}'.format(original, largepath)]}
 
 def task_thumbs():
+    '''
+    Create thumbnails from originals in the corresponding thumbnail directory.
+    '''
     for original in glob('galleries/*/*jpg'):
         thumbpath = _thumbpath(original)
         yield {
@@ -42,10 +68,12 @@ def task_thumbs():
                 _mkdir,
                 'magick convert -geometry x250 {} {}'.format(original, thumbpath)]}
 
-def dirsonly(L):
-    return filter(lambda i: os.path.isdir(i), L)
-
 def task_orderfiles():
+    '''
+    Read EXIF data from all images and create the order.txt files,
+    which are the file names sorted by capture time, and the x/y
+    dimenions of the thumbnails.
+    '''
     for galdir in dirsonly(glob('galleries/*')):
         galname = os.path.basename(galdir)
         orderfile = os.path.join('galleries', '{}_order.txt'.format(galname))
@@ -60,6 +88,9 @@ def task_orderfiles():
             'actions': [(make_order_file, [galdir, reverse])]}
 
 def task_gallery_html():
+    '''
+    Generate HTML for directories in galleries/.
+    '''
     for galdir in dirsonly(glob('galleries/*')):
         # we need the image files to exist, and the order files to exist.
         galname = os.path.basename(galdir)
@@ -68,19 +99,25 @@ def task_gallery_html():
         yield {
             'name': target,
             'task_dep': ['orderfiles', 'thumbs', 'larges'],
-            'file_dep': [orderfile, 'templates/gallery_template.html.tmpl'],
+            'file_dep': [orderfile] + glob('templates/*'),
             'targets': [target],
             'actions': [(make_stream_html, [orderfile, target, galname])]
             }
 
 def task_homepage():
+    '''
+    Generate the homepage HTML.
+    '''
     return {
         'task_dep': ['gallery_html'],
-        'file_dep': ['galleries/photostream_order.txt', 'templates/index.html.tmpl'],
+        'file_dep': ['galleries/photostream_order.txt'] + glob('templates/*'),
         'targets': ['site/index.html'],
         'actions': [make_index_html]}
 
 def task_static():
+    '''
+    Copy all files from ./static to ./site/static/. Parallelizes with doit -n 8.
+    '''
     for path, subdirs, files in os.walk('./static/'):
         for name in files:
             filepath = os.path.join(path, name)

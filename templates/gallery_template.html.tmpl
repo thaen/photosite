@@ -1,58 +1,14 @@
-<HTML>
-  <HEAD>
-    <TITLE>Hello.</TITLE>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <STYLE>
-UL {
-  display: flex;
-  flex-wrap: wrap;
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-}
-LI {
-  padding: 1px 0px 0px 1px;
-  flex-grow:1;
-}
-LI:last-child {
-  flex-grow: 10;
-}
-IMG {
-  max-height: 100%;
-  min-width: 100%;
-  object-fit: cover;
-  vertical-align: bottom;
-}
-BODY {
-  margin:0;
-  padding:0;
-}
-      @media screen and (min-width:0px) and (max-width:440px) {
-          .galthumb {
-              height: 120px;
-              width:auto;
-          }
-      }
-      @media screen and (min-width:441px) {
-          .galthumb {
-              height: 200px;
-              width: auto;
-          }
-      }
-    </STYLE>
-  </HEAD>
-  <BODY>
-    <DIV style="font-weight: bold; padding: 10px;">{{ title }}</DIV>
-    <BR/>
-    <UL>
-      {% for photo in photos %}
-      <LI>
-	<A HREF="large/{{photo.name}}.jpg">
-	  <IMG SRC="thumbnails/{{photo.name}}.jpg" loading="lazy" class="galthumb" width="{{photo.xdim}}" height="{{photo.ydim}}" />
-	</A>
-      </LI>
-      {% endfor %}
-      <LI></LI>
-    </UL>
-  </BODY>
-</HTML>
+{% include 'head.html' %}
+<DIV style="font-weight: bold; padding: 10px;">{{ title }}</DIV>
+<BR/>
+<UL>
+  {% for photo in photos %}
+  <LI>
+    <A HREF="large/{{photo.name}}.jpg">
+      <IMG SRC="thumbnails/{{photo.name}}.jpg" loading="lazy" class="galthumb" width="{{photo.xdim}}" height="{{photo.ydim}}" />
+    </A>
+  </LI>
+  {% endfor %}
+  <LI></LI>
+</UL>
+{% include 'foot.html' %}
