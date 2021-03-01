@@ -94,7 +94,8 @@ def task_gallery_html():
     for galdir in dirsonly(glob('galleries/*')):
         # we need the image files to exist, and the order files to exist.
         galname = os.path.basename(galdir)
-        target = os.path.join(_sitepath(galdir), 'index.html')
+        targetdir = _sitepath(galdir)
+        target = os.path.join(targetdir, 'index.html')
         orderfile = os.path.join('galleries', '{}_order.txt'.format(galname))
         yield {
             'name': target,
@@ -104,6 +105,45 @@ def task_gallery_html():
             'actions': [(make_stream_html, [orderfile, target, galname])]
             }
 
+        with open(orderfile) as f:
+            orderdata = f.readlines()
+
+        prevdata = orderdata[:][:-1]
+        prevdata.insert(0, None)
+        nextdata = orderdata[1:]
+        nextdata.append(None)
+        for prev, cur, next_ in zip(prevdata, orderdata, nextdata):
+            photo_id = cur.split(',')[0]
+            filename = os.path.join(targetdir, photo_id + '.html')
+                                 
+            yield {
+                'name': filename,
+                'targets': [filename],
+                'task_dep': ['orderfiles', 'thumbs', 'larges'],
+                'file_dep': [orderfile] + glob('templates/*'),
+                'actions': [(make_gallery_html,
+                             [targetdir, prev, photo_id, next_])]
+            }
+        
+def make_gallery_html(targetdir, prev, photo_id, next_):
+    template = jenv.get_template('galpage.html')
+    prevlink = None
+    if prev:
+        prevlink = os.path.join(prev.split(',')[0] + '.html')
+
+    nextlink = None
+    if next_:
+        nextlink = os.path.join(next_.split(',')[0] + '.html')
+
+    with open(os.path.join(targetdir, photo_id + '.html'), 'w') as f:
+        f.write(
+            template.render(
+                title='see photo run',
+                prevlink=prevlink,
+                nextlink=nextlink,
+                largefile='large/' + photo_id + '.jpg'))
+        
+        
 def task_homepage():
     '''
     Generate the homepage HTML.

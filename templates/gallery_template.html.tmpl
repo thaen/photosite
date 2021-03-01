@@ -3,8 +3,12 @@
 <UL>
   {% for photo in photos %}
   <LI>
-    <A HREF="large/{{photo.name}}.jpg">
-      <IMG SRC="thumbnails/{{photo.name}}.jpg" loading="lazy" class="galthumb" width="{{photo.xdim}}" height="{{photo.ydim}}" />
+    <A HREF="{{photo.name}}.html">
+      <IMG SRC="thumbnails/{{photo.name}}.jpg"
+	   loading="lazy"
+	   class="galthumb"
+	   width="{{photo.xdim}}"
+	   height="{{photo.ydim}}" />
     </A>
   </LI>
   {% endfor %}
