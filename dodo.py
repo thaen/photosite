@@ -22,6 +22,10 @@ import sys
 
 from doit import create_after
 
+from datetime import datetime
+from exif import Image
+import subprocess
+
 from jinja2 import Environment, FileSystemLoader
 jenv = Environment(loader=FileSystemLoader('templates'))
 
@@ -44,6 +48,15 @@ def _thumbpath(original):
 def dirsonly(L):
     return filter(lambda i: os.path.isdir(i), L)
 
+def task_sync_s3_larges():
+    '''
+    Sync from s3 to galleries/ directory.
+    '''
+    return {
+        'actions': ['mkdir -p galleries',
+                    'aws s3 sync s3://efj-originals-east-1/ galleries/']
+        }
+
 def task_larges():
     '''
     Copy original photos into the corresponding directory in the site/.
@@ -53,6 +66,7 @@ def task_larges():
         yield {
             'name': largepath,
             'file_dep': [original],
+            'task_dep': ['sync_s3_larges'],
             'targets': [largepath],
             'actions': [_mkdir, 'cp {} {}'.format(original, largepath)]}
 
@@ -254,10 +268,6 @@ def make_stream_html(orderfile, target, galname):
 
 # *******************************************
 # make the order files
-
-from datetime import datetime
-from exif import Image
-import subprocess
 
 def make_order_file(galdir, reverse, dependencies, targets):
     # dependencies is only a list of files that are updated, not all the files. grab all the files.
