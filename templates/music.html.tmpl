@@ -1,0 +1,14 @@
+{% include 'head.html' %}
+<DIV>
+  This is a stream of music I find that I like.
+</DIV>
+<UL class="music">
+  {% for song in songs %}
+  <LI>
+    <DIV class="padded"><B>{{ song.title }}</B></DIV>
+    <iframe class="yt" src="https://www.youtube.com/embed/{{ song.url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <DIV class="padded">{{ song.comments }}</DIV>
+  </LI>
+  {% endfor %}
+</UL>
+{% include 'foot.html' %}

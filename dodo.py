@@ -20,6 +20,8 @@ from glob import glob
 import os
 import sys
 
+from doit import create_after
+
 from jinja2 import Environment, FileSystemLoader
 jenv = Environment(loader=FileSystemLoader('templates'))
 
@@ -84,9 +86,11 @@ def task_orderfiles():
         yield {
             'name': orderfile,
             'targets': [orderfile],
+            'task_dep': ['thumbs'],
             'file_dep': deps,
             'actions': [(make_order_file, [galdir, reverse])]}
 
+@create_after(executed='orderfiles')
 def task_gallery_html():
     '''
     Generate HTML for directories in galleries/.
@@ -100,11 +104,19 @@ def task_gallery_html():
         yield {
             'name': target,
             'task_dep': ['orderfiles', 'thumbs', 'larges'],
-            'file_dep': [orderfile] + glob('templates/*'),
+            'file_dep': [orderfile, 'templates/gallery_template.html.tmpl',
+                         'templates/foot.html', 'templates/head.html'],
             'targets': [target],
             'actions': [(make_stream_html, [orderfile, target, galname])]
             }
 
+        # TODO: This doesn't run at task execution time. It runs at
+        # task definition time. Therefore, if the order files change
+        # DURING task execution, the previous/next things could be
+        # INCORRECT because they were set before the order files were
+        # changed.
+        #
+        # SOLUTION: https://pydoit.org/task_creation.html#delayed-task-creation
         with open(orderfile) as f:
             orderdata = f.readlines()
 
@@ -115,16 +127,34 @@ def task_gallery_html():
         for prev, cur, next_ in zip(prevdata, orderdata, nextdata):
             photo_id = cur.split(',')[0]
             filename = os.path.join(targetdir, photo_id + '.html')
-                                 
+
             yield {
                 'name': filename,
                 'targets': [filename],
                 'task_dep': ['orderfiles', 'thumbs', 'larges'],
-                'file_dep': [orderfile] + glob('templates/*'),
+                'file_dep': [orderfile, 'templates/galpage.html', 'templates/foot.html', 'templates/head.html'],
                 'actions': [(make_gallery_html,
                              [targetdir, prev, photo_id, next_])]
             }
         
+def _write_if_changed(content, filename):
+    # TODO this task actually only depends on the ones before
+    # and after it.  If those don't change, we don't need to
+    # redo this.  We may end up cheesing this because the
+    # cascading effects will cause us to rewrite all gallery
+    # pages if we add one page (p1 changes, so p2 points to
+    # p1, so p3 has to change since p2 did, etc.) When in
+    # reality we don't usually need to write a new
+    # file. Avoiding writing new files is important because
+    # uploading thousands of new HTML files every time we add
+    # a picture to s3 is silly.
+    if os.path.exists(filename):
+        with open(filename, 'r') as f:
+            if f.read() == content:
+                return
+    with open(filename, 'w') as f:
+        f.write(content)
+
 def make_gallery_html(targetdir, prev, photo_id, next_):
     template = jenv.get_template('galpage.html')
     prevlink = None
@@ -135,13 +165,14 @@ def make_gallery_html(targetdir, prev, photo_id, next_):
     if next_:
         nextlink = os.path.join(next_.split(',')[0] + '.html')
 
-    with open(os.path.join(targetdir, photo_id + '.html'), 'w') as f:
-        f.write(
-            template.render(
-                title='see photo run',
-                prevlink=prevlink,
-                nextlink=nextlink,
-                largefile='large/' + photo_id + '.jpg'))
+    _write_if_changed(
+        template.render(
+            title='see photo run',
+            prevlink=prevlink,
+            nextlink=nextlink,
+            largefile='large/' + photo_id + '.jpg'),
+        os.path.join(targetdir, photo_id + '.html')
+    )
         
         
 def task_homepage():
@@ -153,6 +184,23 @@ def task_homepage():
         'file_dep': ['galleries/photostream_order.txt'] + glob('templates/*'),
         'targets': ['site/index.html'],
         'actions': [make_index_html]}
+
+def task_music_html():
+    yield {
+        'name': 'music.html',
+        'file_dep': ['songs.txt', 'templates/music.html.tmpl'],
+        'targets': ['site/music.html'],
+        'actions': [make_music_html]}
+def make_music_html():
+    class Song():
+        def __init__(self, songline):
+            self.url, self.title, self.comments = songline.split('|')
+    with open('songs.txt') as f:
+        songlist = [Song(line) for line in f.readlines()]
+
+    template = jenv.get_template('music.html.tmpl')
+    with open ("site/music.html", "w") as fh:
+        fh.write(template.render(songs = songlist))
 
 def task_static():
     '''

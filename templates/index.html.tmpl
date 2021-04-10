@@ -1,19 +1,33 @@
 {% include 'head.html' %}
 <DIV class="row">
   <DIV class="photostream">
-    <A class=header HREF="photostream/">
-      <UL>
-	{% for photo in photos %}
-	<LI><IMG SRC="photostream/thumbnails/{{ photo.name }}.jpg" loading="lazy" class="galthumb" width="{{ photo.width}}" height="{{ photo.height }}" /></LI>
-	{% endfor %}
-	<LI></LI>
-      </UL>
-    </A>
+    <UL class="gallery">
+      {% for photo in photos %}
+      <LI>
+	<A HREF="photostream/{{photo.name}}.html">
+	  <IMG SRC="photostream/thumbnails/{{photo.name}}.jpg"
+	       loading="lazy"
+	       class="galthumb"
+	       width="{{ photo.width}}"
+	       height="{{ photo.height }}" />
+	</A>
+      </LI>
+      {% endfor %}
+      <LI></LI>
+    </UL>
   </DIV>
   <DIV class="column">
     <DIV class="padded">
+      <SPAN class=header>Recent.</SPAN><BR/>
+      I added a Music page. I made the Photostream easy to update, so there are new pics there and I hope to keep it up to date. I added Emma's Santa letter. <BR/>
+      <!-- A HREF="/static/blog.html">Blog</A><BR/ -->
+      <A HREF="music.html">Music</A>
+    </DIV>
+
+    <DIV class="padded">
       <SPAN class=header>Photos.</SPAN><BR/>
-      I still write HTML like it's 1999. I may try to "learn" things as I do this, like how the modern web works.<BR/>
+      <A HREF="/photostream/">photostream</A><BR/>
+      <A HREF="/2020_book_photos/">2020 book photos</A><BR/>
       <A HREF="/2019_book_photos/">2019 book photos</A><BR/>
       <A HREF="/2018_book_photos/">2018 book photos</A><BR/>
       <A HREF="/2017_book_photos/">2017 book photos</A><BR/>
@@ -24,16 +38,16 @@
     <DIV style="background-color:#eee; text-align:left;" class="padded">
       <SPAN class=header>Keepsakes.</SPAN><BR/>
       <A HREF="/static/ethan_santa_letter.html">ethan's santa letter</A><br/>
+      <A HREF="/static/emma_santa_letter.html">emma's santa letter</A><br/>
       <A HREF="/static/to_my_unborn_child.html">to my unborn child</A>
-    </DIV>
-    
-    <DIV class="padded">
-      <SPAN class=header>Blog.</SPAN><BR/>
-      <A HREF="/static/blog.html">Blog</A>
     </DIV>
   </DIV>
   
   <DIV class="column hide-mobile">
+    <DIV class="padded">
+      I still write HTML like it's 1999. I may try to "learn" things as I do this, like how the modern web works.
+    </DIV>
+
     <DIV class="padded">
       <SPAN class=header>Books.</SPAN><BR/>
       PDF book links. There are VERY LARGE, don't download them on a phone.<br/>
@@ -41,12 +55,6 @@
       <A HREF="/static/pdfs/2018_book.pdf">2018 book PDF version</A><BR/>
       <A HREF="/static/pdfs/2017_book.pdf">2017 book PDF version</A><BR/>
       <A HREF="/static/pdfs/2016_book.pdf">2016 book PDF version</A><BR/>
-    </DIV>
-    
-    <DIV class="padded">
-      <SPAN class=header>New.</SPAN><BR/>  I dramatically changed
-      the Photostream layout to remove the use of Javascript,
-      which I hate. I added a Photostream to the home page.
     </DIV>
   </DIV>
 </DIV>

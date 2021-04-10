@@ -1,6 +1,7 @@
 {% include 'head.html' %}
-<DIV style="font-weight: bold; padding: 10px;">{{ title }}</DIV>
-<UL>
+<DIV style="padding: 5px 10px"><P style="float: left;">{{ title }}</P> <P style="float: right;"><A HREF="/">home</A></P></DIV>
+<DIV style="clear: both;"></DIV>
+<UL class="gallery">
   {% for photo in photos %}
   <LI>
     <A HREF="{{photo.name}}.html">

@@ -1,10 +1,14 @@
 {% include 'head.html' %}
+{% if prevlink %}
 <DIV class="gal-nav gal-prev">
   <A HREF="{{prevlink}}"><</A>
-</DIV>
+			   </DIV>
+{% endif %}
+{% if nextlink %}
 <DIV class="gal-nav gal-next">
   <A HREF="{{nextlink}}">></A>
 </DIV>
+{% endif %}
 <DIV class="gal-nav gal-home">
   <A HREF="index.html">H</A>
 </DIV>
