@@ -48,15 +48,6 @@ def _thumbpath(original):
 def dirsonly(L):
     return filter(lambda i: os.path.isdir(i), L)
 
-def task_sync_s3_larges():
-    '''
-    Sync from s3 to galleries/ directory.
-    '''
-    return {
-        'actions': ['mkdir -p galleries',
-                    'aws s3 sync s3://efj-originals-east-1/ galleries/']
-        }
-
 def task_larges():
     '''
     Copy original photos into the corresponding directory in the site/.
@@ -66,7 +57,6 @@ def task_larges():
         yield {
             'name': largepath,
             'file_dep': [original],
-            'task_dep': ['sync_s3_larges'],
             'targets': [largepath],
             'actions': [_mkdir, 'cp {} {}'.format(original, largepath)]}
 
