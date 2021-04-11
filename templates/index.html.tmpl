@@ -26,13 +26,9 @@
 
     <DIV class="padded">
       <SPAN class=header>Photos.</SPAN><BR/>
-      <A HREF="/photostream/">photostream</A><BR/>
-      <A HREF="/2020_book_photos/">2020 book photos</A><BR/>
-      <A HREF="/2019_book_photos/">2019 book photos</A><BR/>
-      <A HREF="/2018_book_photos/">2018 book photos</A><BR/>
-      <A HREF="/2017_book_photos/">2017 book photos</A><BR/>
-      <A HREF="/2016_book_photos/">2016 book photos</A><BR/>
-      <A HREF="/2015_book_photos/">2015 book photos</A><BR/>
+      {% for gallery in galleries %}
+      <A HREF="/{{ gallery.dir }}/">{{ gallery.name }}</A><BR/>
+      {% endfor %}
     </DIV>
     
     <DIV style="background-color:#eee; text-align:left;" class="padded">

@@ -108,7 +108,8 @@ def task_gallery_html():
         yield {
             'name': target,
             'task_dep': ['orderfiles', 'thumbs', 'larges'],
-            'file_dep': [orderfile, 'templates/gallery_template.html.tmpl',
+            'file_dep': [orderfile,
+                         'templates/gallery_template.html.tmpl',
                          'templates/foot.html', 'templates/head.html'],
             'targets': [target],
             'actions': [(make_stream_html, [orderfile, target, galname])]
@@ -227,13 +228,25 @@ def make_index_html():
     with open('galleries/photostream_order.txt') as f:
         stream_photos = [d.split(',') for d in f.readlines()[:20]]
 
+    gallery_dirs = sorted(
+        list(
+            filter(
+                lambda x: os.path.isdir(os.path.join('galleries', x)),
+                os.listdir('galleries'))))
+
+    galleries = [
+        {
+            'name': d.replace('_', ' '),
+            'dir': d
+        } for d in gallery_dirs]
+    
     photos = [
         {"name":data[0],
          "width":data[1],
          "height":data[2]} for data in stream_photos
     ]
 
-    output_from_parsed_template = template.render(photos=photos)
+    output_from_parsed_template = template.render(photos=photos, galleries=galleries)
 
     # to save the results
     with open("site/index.html", "w") as fh:
