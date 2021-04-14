@@ -34,15 +34,15 @@ def _mkdir(targets):
         os.makedirs(os.path.dirname(target), exist_ok=True)
 
 def _sitepath(original):
-    return original.replace('galleries', 'site')
+    return original.replace('content/galleries', 'site')
         
 def _largepath(original):
-    # original is like galleries/2015_book_photos/foo.jpg
-    path = original.replace('galleries', 'site')
+    # original is like content/galleries/2015_book_photos/foo.jpg
+    path = original.replace('content/galleries', 'site')
     return os.path.join(os.path.dirname(path), 'large', os.path.basename(path))
 
 def _thumbpath(original):
-    path = original.replace('galleries', 'site')
+    path = original.replace('content/galleries', 'site')
     return os.path.join(os.path.dirname(path), 'thumbnails', os.path.basename(path))
 
 def dirsonly(L):
@@ -52,7 +52,7 @@ def task_larges():
     '''
     Copy original photos into the corresponding directory in the site/.
     '''
-    for original in glob('galleries/*/*jpg'):
+    for original in glob('content/galleries/*/*jpg'):
         largepath = _largepath(original)
         yield {
             'name': largepath,
@@ -64,7 +64,7 @@ def task_thumbs():
     '''
     Create thumbnails from originals in the corresponding thumbnail directory.
     '''
-    for original in glob('galleries/*/*jpg'):
+    for original in glob('content/galleries/*/*jpg'):
         thumbpath = _thumbpath(original)
         yield {
             'name': thumbpath,
@@ -80,9 +80,9 @@ def task_orderfiles():
     which are the file names sorted by capture time, and the x/y
     dimenions of the thumbnails.
     '''
-    for galdir in dirsonly(glob('galleries/*')):
+    for galdir in dirsonly(glob('content/galleries/*')):
         galname = os.path.basename(galdir)
-        orderfile = os.path.join('galleries', '{}_order.txt'.format(galname))
+        orderfile = os.path.join('content/galleries', '{}_order.txt'.format(galname))
         deps = glob(os.path.join(galdir, '*'))
         reverse = False
         if galname == 'photostream':
@@ -99,12 +99,12 @@ def task_gallery_html():
     '''
     Generate HTML for directories in galleries/.
     '''
-    for galdir in dirsonly(glob('galleries/*')):
+    for galdir in dirsonly(glob('content/galleries/*')):
         # we need the image files to exist, and the order files to exist.
         galname = os.path.basename(galdir)
         targetdir = _sitepath(galdir)
         target = os.path.join(targetdir, 'index.html')
-        orderfile = os.path.join('galleries', '{}_order.txt'.format(galname))
+        orderfile = os.path.join('content/galleries', '{}_order.txt'.format(galname))
         yield {
             'name': target,
             'task_dep': ['orderfiles', 'thumbs', 'larges'],
@@ -186,7 +186,7 @@ def task_homepage():
     '''
     return {
         'task_dep': ['gallery_html'],
-        'file_dep': ['galleries/photostream_order.txt'] + glob('templates/*'),
+        'file_dep': ['content/galleries/photostream_order.txt'] + glob('templates/*'),
         'targets': ['site/index.html'],
         'actions': [make_index_html]}
 
@@ -211,7 +211,7 @@ def task_static():
     '''
     Copy all files from ./static to ./site/static/. Parallelizes with doit -n 8.
     '''
-    for path, subdirs, files in os.walk('./static/'):
+    for path, subdirs, files in os.walk('./content/static/'):
         for name in files:
             filepath = os.path.join(path, name)
             target = os.path.join('site', filepath)
@@ -225,14 +225,14 @@ def task_static():
 def make_index_html():
     template = jenv.get_template('index.html.tmpl')
 
-    with open('galleries/photostream_order.txt') as f:
+    with open('content/galleries/photostream_order.txt') as f:
         stream_photos = [d.split(',') for d in f.readlines()[:20]]
 
     gallery_dirs = sorted(
         list(
             filter(
-                lambda x: os.path.isdir(os.path.join('galleries', x)),
-                os.listdir('galleries'))))
+                lambda x: os.path.isdir(os.path.join('content/galleries', x)),
+                os.listdir('content/galleries'))))
 
     galleries = [
         {
