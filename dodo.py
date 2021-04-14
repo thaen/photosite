@@ -38,8 +38,6 @@ def _sitepath(original):
         return original.replace('content/galleries', 'site')
     if "static" in original:
         return original.replace('content/static', 'site/static')
-
-    return original.replace('content/galleries', 'site')
         
 def _largepath(original):
     # original is like content/galleries/2015_book_photos/foo.jpg
