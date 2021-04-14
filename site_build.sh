@@ -12,7 +12,8 @@ cd ~/photosite/
 git pull --rebase
 
 pushd ${CONTENT_DIR}
-aws s3 sync --delete s3://${SOURCE_BUCKET}/ .
+# TODO: to add --delete here we have to move the orderfiles to a place outside the content/ dir
+aws s3 sync s3://${SOURCE_BUCKET}/ .
 popd
 
 doit -n 4
