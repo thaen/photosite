@@ -34,6 +34,11 @@ def _mkdir(targets):
         os.makedirs(os.path.dirname(target), exist_ok=True)
 
 def _sitepath(original):
+    if "galleries" in original:
+        return original.replace('content/galleries', 'site')
+    if "static" in original:
+        return original.replace('content/static', 'site/static')
+
     return original.replace('content/galleries', 'site')
         
 def _largepath(original):
@@ -214,7 +219,7 @@ def task_static():
     for path, subdirs, files in os.walk('./content/static/'):
         for name in files:
             filepath = os.path.join(path, name)
-            target = os.path.join('site', filepath)
+            target = _sitepath(filepath)
             yield {
                 'name': target,
                 'file_dep': [filepath],

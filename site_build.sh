@@ -10,8 +10,13 @@ set -euxo pipefail
 
 cd ~/photosite/
 git pull --rebase
-aws s3 sync s3://${SOURCE_BUCKET}/ ${CONTENT_DIR}
+
+pushd ${CONTENT_DIR}
+aws s3 sync --delete s3://${SOURCE_BUCKET}/ .
+popd
+
 doit -n 4
+
 pushd ${BUILD_DIR}
-aws s3 sync . s3://${TARGET_BUCKET}/
+aws s3 sync --delete . s3://${TARGET_BUCKET}/
 popd
