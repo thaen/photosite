@@ -3,6 +3,5 @@ site/
 __pycache__
 *.jpg
 *.pdf
-static/*
-galleries/*
+content/*
 .DS_Store
