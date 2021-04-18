@@ -340,7 +340,7 @@ class MyImage():
         try:
             d = image.datetime_original
             return d
-        except AttributeError, KeyError as err:
+        except (AttributeError, KeyError) as err:
             # maybe this is a WA image with the date in the filename?
             print("AttError for image {}".format(self.orig_file_path))
             if '-WA' in self.name:
