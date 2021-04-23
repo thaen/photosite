@@ -10,6 +10,9 @@ CONTENT_DIR=content
 
 set -euxo pipefail
 
+cd ~/photosite/
+git pull --rebase
+
 QUEUE_URL=$(aws cloudformation describe-stacks --stack-name bucket --query 'Stacks[0].Outputs[?OutputKey==`QueueURL`].OutputValue' --output text)
 
 if aws sqs receive-message --queue-url ${QUEUE_URL} | grep MessageId; then
@@ -20,9 +23,6 @@ if aws sqs receive-message --queue-url ${QUEUE_URL} | grep MessageId; then
 else
     exit 0
 fi
-
-cd ~/photosite/
-git pull --rebase
 
 pushd ${CONTENT_DIR}
 # TODO: to add --delete here we have to move the orderfiles to a place outside the content/ dir
