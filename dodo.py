@@ -10,11 +10,13 @@ However, there are a lot of dependencies in the artifacts.  I find
 this to be a fascinating problem because I see no way out of it:
 index.html needs to link to the galleries, meaning an author has to
 understand that.  Theoretically you could give the author of
-/index.html something a level of indirection, like a structure to loop
+/index.html some level of indirection, like a structure to loop
 over, but this incurs logic here (to build the list) and pain on the
 author (to understand it).  It seems better overall to me to keep this
 file as small as possible.
 '''
+
+import calendar
 
 from glob import glob
 import os
@@ -113,7 +115,9 @@ def task_gallery_html():
             'task_dep': ['orderfiles', 'thumbs', 'larges'],
             'file_dep': [orderfile,
                          'templates/gallery_template.html.tmpl',
-                         'templates/foot.html', 'templates/head.html'],
+                         'templates/foot.html',
+                         'templates/head.html',
+                         'templates/gallery_content_template.html.tmpl'],
             'targets': [target],
             'actions': [(make_stream_html, [orderfile, target, galname])]
             }
@@ -228,8 +232,7 @@ def task_static():
 def make_index_html():
     template = jenv.get_template('index.html.tmpl')
 
-    with open('content/galleries/photostream_order.txt') as f:
-        stream_photos = [d.split(',') for d in f.readlines()[:20]]
+    groups = _get_photo_groups('content/galleries/photostream_order.txt')
 
     gallery_dirs = sorted(
         list(
@@ -243,34 +246,48 @@ def make_index_html():
             'dir': d
         } for d in gallery_dirs]
     
-    photos = [
-        {"name":data[0],
-         "width":data[1],
-         "height":data[2]} for data in stream_photos
-    ]
-
-    output_from_parsed_template = template.render(photos=photos, galleries=galleries)
+    output_from_parsed_template = template.render(groups=groups,
+                                                  galname='photostream',
+                                                  galleries=galleries)
 
     # to save the results
     with open("site/index.html", "w") as fh:
         fh.write(output_from_parsed_template)
 
-def make_stream_html(orderfile, target, galname):
-    template = jenv.get_template('gallery_template.html.tmpl')
-
+def _get_photo_groups(orderfile):
     with open(orderfile) as order:
         data = []
         for line in order.readlines():
             name, xdim, ydim, capture_time = line.split(',')
-            data.append({'name': name, 'xdim': xdim, 'ydim':ydim})
-    
-    output_from_parsed_template = template.render(title=galname, photos=data)
+            data.append(
+                {'name': name, 'xdim': xdim, 'ydim':ydim,
+                 'capture_time': datetime.strptime(capture_time.strip(), '%Y:%m:%d %H:%M:%S')})
+
+    # this isn't super flexible. oh who are we kidding, this *file* isn't super flexible.
+    curgroup = {'description': "",
+                'photos': []}
+    groups = []
+    for photo in data:
+        desc = "{} {}".format(
+            calendar.month_name[photo['capture_time'].month],
+            photo['capture_time'].year)
+        if curgroup['description'] != desc:
+            # make a new group and append existing one to the list
+            if curgroup['photos']:
+                groups.append(curgroup)
+            curgroup = {'description': desc, 'photos': []}
+        curgroup['photos'].append(photo)
+    return groups
+        
+def make_stream_html(orderfile, target, galname):
+    template = jenv.get_template('gallery_template.html.tmpl')
+
+    output_from_parsed_template = template.render(title=galname,
+                                                  galname=galname,
+                                                  groups=_get_photo_groups(orderfile))
     
     with open(os.path.join(target), 'w') as fh:
         fh.write(output_from_parsed_template)
-
-# *******************************************
-# render photostream HTML
 
 # *******************************************
 # make the order files
@@ -309,6 +326,11 @@ def make_order_file(galdir, reverse, dependencies, targets):
     with open(ORDER_FILE, 'w') as f:
         f.writelines(names)
 
+class GalleryGroup():
+    def __init__(self, description, photos):
+        self.photos = photos
+        self.description = description
+        
 class MyImage():
     def __init__(self, orig_file_path):
         self.orig_file_path = orig_file_path

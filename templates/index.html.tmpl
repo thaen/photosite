@@ -1,20 +1,7 @@
 {% include 'head.html' %}
 <DIV class="row">
   <DIV class="photostream">
-    <UL class="gallery">
-      {% for photo in photos %}
-      <LI>
-	<A HREF="photostream/{{photo.name}}.html">
-	  <IMG SRC="photostream/thumbnails/{{photo.name}}.jpg"
-	       loading="lazy"
-	       class="galthumb"
-	       width="{{ photo.width}}"
-	       height="{{ photo.height }}" />
-	</A>
-      </LI>
-      {% endfor %}
-      <LI></LI>
-    </UL>
+    {% include 'gallery_content_template.html.tmpl' %}
   </DIV>
   <DIV class="column">
     <DIV class="padded">

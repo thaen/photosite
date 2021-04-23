@@ -1,0 +1,17 @@
+{% for group in groups %}
+<p class="dark padded lighttext"><b>{{ group.description }}</b></p>
+<UL class="gallery">
+  {% for photo in group.photos %}
+  <LI>
+    <A HREF="/{{galname}}/{{photo.name}}.html">
+      <IMG SRC="/{{galname}}/thumbnails/{{photo.name}}.jpg"
+	   loading="lazy"
+	   class="galthumb"
+	   width="{{photo.xdim}}"
+	   height="{{photo.ydim}}" />
+    </A>
+  </LI>
+  {% endfor %}
+  <LI></LI>
+</UL>
+{% endfor %}

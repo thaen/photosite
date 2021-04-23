@@ -1,18 +1,8 @@
 {% include 'head.html' %}
+
 <DIV style="padding: 5px 10px"><P style="float: left;">{{ title }}</P> <P style="float: right;"><A HREF="/">home</A></P></DIV>
 <DIV style="clear: both;"></DIV>
-<UL class="gallery">
-  {% for photo in photos %}
-  <LI>
-    <A HREF="{{photo.name}}.html">
-      <IMG SRC="thumbnails/{{photo.name}}.jpg"
-	   loading="lazy"
-	   class="galthumb"
-	   width="{{photo.xdim}}"
-	   height="{{photo.ydim}}" />
-    </A>
-  </LI>
-  {% endfor %}
-  <LI></LI>
-</UL>
+
+{% include 'gallery_content_template.html.tmpl' %}
+
 {% include 'foot.html' %}
