@@ -370,6 +370,11 @@ class MyImage():
                 dt = datetime.strptime(maybe_dt, '%Y%m%d')
                 if dt:
                     return dt.strftime('%Y:%m:%d %H:%M:%S')
+            elif 'signal-' in self.name:
+                # maybe this is a signal image with the date in the filename?
+                dt = datetime.strptime(self.name, 'signal-%Y-%m-%d-%H%M%S.jpg')
+                if dt:
+                    return dt.strftime('%Y:%m:%d %H:%M:%S')
             print("Image at {} has no EXIF for datetime.".format(self.orig_file_path))
             return None
         
