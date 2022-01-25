@@ -1,5 +1,21 @@
 #!/bin/bash
 
+# The goal of this script is to download new photos from the "source" s3 bucket
+# and avoid running S3 operations unless they must be run.
+#
+# This script (actually the whole repo) is pulled down regularly to a host.
+#
+# There is an S3 bcuket (call it "source") that I can upload to from
+#  my phone (or laptop, w/e). That bucket is configured so that when
+#  somethig uploads to it, a SQS message is generated. The message
+#  itself is unimportant, but it tells us there's new content.
+#
+# So, when there's such a message, the build host syncs from the
+# bucket, runs this script, and uplaods the resulting target
+# bucket. Which usually doesn't change much, so there's not much for
+# s3 sync to do.
+
+
 export AWS_DEFAULT_REGION=us-east-1
 
 SOURCE_BUCKET=efj-originals-east-1
