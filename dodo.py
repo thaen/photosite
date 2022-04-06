@@ -77,7 +77,7 @@ def task_thumbs():
             'targets': [thumbpath],
             'actions': [
                 _mkdir,
-                "magick convert -geometry x250 '{}' '{}'".format(original, thumbpath)]}
+                "convert -geometry x250 '{}' '{}'".format(original, thumbpath)]}
 
 def task_orderfiles():
     '''
@@ -384,7 +384,7 @@ class MyImage():
             image = Image(self.orig_file_path)
             self.capture_time = self.get_capture_time(image).strip()
 
-            dimen_cmd = "magick identify '{}'"
+            dimen_cmd = "identify '{}'"
             out = subprocess.check_output(dimen_cmd.format(_thumbpath(self.orig_file_path)),
                                           shell=True).decode('UTF-8')
             print(out.split()[2].split('x'))
