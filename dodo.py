@@ -40,7 +40,7 @@ def _sitepath(original):
         return original.replace('content/galleries', 'site')
     if "static" in original:
         return original.replace('content/static', 'site/static')
-        
+
 def _largepath(original):
     # original is like content/galleries/2015_book_photos/foo.jpg
     path = original.replace('content/galleries', 'site')
@@ -387,6 +387,6 @@ class MyImage():
             dimen_cmd = "identify '{}'"
             out = subprocess.check_output(dimen_cmd.format(_thumbpath(self.orig_file_path)),
                                           shell=True).decode('UTF-8')
-            print(out.split()[2].split('x'))
+            print(dimen_cmd.format(_thumbpath(self.orig_file_path)), out.split()[2].split('x'))
             self.xdim, self.ydim = out.split()[2].split('x')
                 
