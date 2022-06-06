@@ -277,6 +277,8 @@ def _get_photo_groups(orderfile):
                 groups.append(curgroup)
             curgroup = {'description': desc, 'photos': []}
         curgroup['photos'].append(photo)
+    groups.append(curgroup)
+
     return groups
         
 def make_stream_html(orderfile, target, galname):
