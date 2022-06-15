@@ -37,7 +37,7 @@ if aws sqs receive-message --queue-url ${QUEUE_URL} | grep MessageId; then
     # in lots and lots of S3 operations if there's a systemic failure.
     aws sqs purge-queue --queue-url ${QUEUE_URL}
 else
-    exit 0
+    echo "hi"
 fi
 
 pushd ${CONTENT_DIR}
