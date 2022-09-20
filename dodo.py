@@ -193,7 +193,7 @@ def task_homepage():
     '''
     return {
         'task_dep': ['gallery_html'],
-        'file_dep': ['content/galleries/photostream_order.txt'] + glob('templates/*'),
+        'file_dep': ['content/galleries/photostream_order.txt'] + glob('templates/*') + glob('content/galleries/*'),
         'targets': ['site/index.html'],
         'actions': [make_index_html]}
 
