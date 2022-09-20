@@ -384,7 +384,10 @@ class MyImage():
         if not all([self.xdim, self.ydim, self.capture_time]):
             print("Missing some metadata for {}, will grab...".format(self.orig_file_path))
             image = Image(self.orig_file_path)
-            self.capture_time = self.get_capture_time(image).strip()
+            try:
+                self.capture_time = self.get_capture_time(image).strip()
+            except Exception as err:
+                raise Exception("couldn't get capture time for {}".format(self.orig_file_path))
 
             dimen_cmd = "identify '{}'"
             out = subprocess.check_output(dimen_cmd.format(_thumbpath(self.orig_file_path)),
