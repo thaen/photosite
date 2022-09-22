@@ -186,7 +186,7 @@ def make_gallery_html(targetdir, prev, photo_id, next_):
         os.path.join(targetdir, photo_id + '.html')
     )
         
-        
+
 def task_homepage():
     '''
     Generate the homepage HTML.
