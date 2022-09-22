@@ -193,7 +193,7 @@ def task_homepage():
     '''
     return {
         'task_dep': ['gallery_html'],
-        'file_dep': ['content/galleries/photostream_order.txt'] + glob('templates/*') + glob('content/galleries/*'),
+        'file_dep': ['content/galleries/photostream_order.txt'] + glob('templates/*') + glob('content/galleries/*order.txt'),
         'targets': ['site/index.html'],
         'actions': [make_index_html]}
 
@@ -392,6 +392,9 @@ class MyImage():
             dimen_cmd = "identify '{}'"
             out = subprocess.check_output(dimen_cmd.format(_thumbpath(self.orig_file_path)),
                                           shell=True).decode('UTF-8')
-            print(dimen_cmd.format(_thumbpath(self.orig_file_path)), out.split()[2].split('x'))
-            self.xdim, self.ydim = out.split()[2].split('x')
+            try:
+                print(dimen_cmd.format(_thumbpath(self.orig_file_path)), out.split()[2].split('x'))
+                self.xdim, self.ydim = out.split()[2].split('x')
+            except Exception as err:
+                raise Exception("couldn't get dimensions for {}, output was {}".format(self.orig_file_path, out))
                 
