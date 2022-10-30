@@ -354,7 +354,7 @@ class MyImage():
             return None
 
         if data[0] != self.name:
-            raise Exception('collision: {} {}'.format(data, self.name))
+            raise Exception('collision: {} -{}- {}'.format(data, orderline, self.name))
 
         self.xdim = data[1]
         self.ydim = data[2]
