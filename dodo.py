@@ -232,7 +232,7 @@ def task_static():
 def make_index_html():
     template = jenv.get_template('index.html.tmpl')
 
-    groups = _get_photo_groups('content/galleries/photostream_order.txt')
+    groups = _get_photo_groups('content/galleries/photostream_order.txt', maxphotos=100)
 
     gallery_dirs = sorted(
         list(
@@ -254,7 +254,7 @@ def make_index_html():
     with open("site/index.html", "w") as fh:
         fh.write(output_from_parsed_template)
 
-def _get_photo_groups(orderfile):
+def _get_photo_groups(orderfile, maxphotos=-1):
     with open(orderfile) as order:
         data = []
         for line in order.readlines():
@@ -267,7 +267,7 @@ def _get_photo_groups(orderfile):
     curgroup = {'description': "",
                 'photos': []}
     groups = []
-    for photo in data:
+    for photo in data[:maxphotos]:
         desc = "{} {}".format(
             calendar.month_name[photo['capture_time'].month],
             photo['capture_time'].year)
