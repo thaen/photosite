@@ -178,11 +178,11 @@ def make_gallery_html(targetdir, prev, photo_id, next_):
     template = jenv.get_template('galpage.html')
     prevlink = None
     if prev:
-        prevlink = os.path.join(prev.split(',')[0] + '.html')
+        prevlink = os.path.join(prev['name'] + '.html')
 
     nextlink = None
     if next_:
-        nextlink = os.path.join(next_.split(',')[0] + '.html')
+        nextlink = os.path.join(next_['name'] + '.html')
 
     _write_if_changed(
         template.render(
