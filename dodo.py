@@ -99,6 +99,13 @@ def task_orderfiles():
             'file_dep': deps,
             'actions': [(make_order_file, [galdir, reverse])]}
 
+def task_photostream_glom_orderfile():
+    yield {
+        'name': 'photostream_glom_order.txt',
+        'targets': ['content/photostream_glom_order.txt'],
+        'task_dep': ['orderfiles'],
+        'actions': [make_photostream_glom_orderfile] }
+        
 @create_after(executed='orderfiles')
 def task_gallery_html():
     '''
@@ -129,15 +136,15 @@ def task_gallery_html():
         # changed.
         #
         # SOLUTION: https://pydoit.org/task_creation.html#delayed-task-creation
-        with open(orderfile) as f:
-            orderdata = f.readlines()
+        of = Orderfile.from_file(orderfile)
 
+        orderdata = of.data
         prevdata = orderdata[:][:-1]
         prevdata.insert(0, None)
         nextdata = orderdata[1:]
         nextdata.append(None)
         for prev, cur, next_ in zip(prevdata, orderdata, nextdata):
-            photo_id = cur.split(',')[0]
+            photo_id = cur['name']
             filename = os.path.join(targetdir, photo_id + '.html')
 
             yield {
@@ -193,7 +200,7 @@ def task_homepage():
     '''
     return {
         'task_dep': ['gallery_html'],
-        'file_dep': ['content/galleries/photostream_order.txt'] + glob('templates/*') + glob('content/galleries/*order.txt'),
+        'file_dep': ['content/photostream_glom_order.txt'] + glob('templates/*') + glob('content/galleries/*order.txt'),
         'targets': ['site/index.html'],
         'actions': [make_index_html]}
 
@@ -232,7 +239,7 @@ def task_static():
 def make_index_html():
     template = jenv.get_template('index.html.tmpl')
 
-    groups = _get_photo_groups('content/galleries/photostream_order.txt', maxphotos=100)
+    groups = _get_photo_groups('content/photostream_glom_order.txt')
 
     gallery_dirs = sorted(
         list(
@@ -254,20 +261,14 @@ def make_index_html():
     with open("site/index.html", "w") as fh:
         fh.write(output_from_parsed_template)
 
-def _get_photo_groups(orderfile, maxphotos=-1):
-    with open(orderfile) as order:
-        data = []
-        for line in order.readlines():
-            name, xdim, ydim, capture_time = line.split(',')
-            data.append(
-                {'name': name, 'xdim': xdim, 'ydim':ydim,
-                 'capture_time': datetime.strptime(capture_time.strip(), '%Y:%m:%d %H:%M:%S')})
+def _get_photo_groups(orderfile):
+    of = Orderfile.from_file(orderfile)
 
     # this isn't super flexible. oh who are we kidding, this *file* isn't super flexible.
     curgroup = {'description': "",
                 'photos': []}
     groups = []
-    for photo in data[:maxphotos]:
+    for photo in of.data:
         desc = "{} {}".format(
             calendar.month_name[photo['capture_time'].month],
             photo['capture_time'].year)
@@ -315,18 +316,71 @@ def make_order_file(galdir, reverse, dependencies, targets):
 
     [my_image.fill_in() for my_image in image_files]
 
-    names = []
-    for item in sorted(image_files,
-                       key=lambda i: i.capture_time,
-                       reverse=reverse):
-        names.append("{},{},{},{}\n".format(
-            item.name,
-            item.xdim,
-            item.ydim,
-            item.capture_time))
+    of = Orderfile(ORDER_FILE, reverse=reverse)
+    for item in image_files:
+        of.add_row(item.name, item.xdim, item.ydim, item.capture_time, os.path.basename(galdir))
+    of.write_file()
 
-    with open(ORDER_FILE, 'w') as f:
-        f.writelines(names)
+class Orderfile:
+    def __init__(self, filename, reverse=False):
+        self.filename = filename
+        self.data = []
+        self.reverse = reverse
+
+    def add_row(self, name, xdim, ydim, capture_time, galname):
+        # always store datetime objects, not strings
+        if not isinstance(capture_time, datetime):
+            capture_time = spt(capture_time)
+        self.data.append(
+            {'name': name, 'xdim': xdim, 'ydim':ydim,
+             'capture_time': capture_time,
+             'galname': galname})
+
+    def write_file(self, numrows=-1):
+        lines = []
+        for item in sorted(self.data,
+                           key = lambda r: r['capture_time'],
+                           reverse=self.reverse)[:numrows]:
+            lines.append("{},{},{},{},{}\n".format(
+                item['name'],
+                item['xdim'],
+                item['ydim'],
+                sft(item['capture_time']),
+                item['galname']))
+        with open(self.filename, 'w') as f:
+            f.writelines(lines)
+        
+    @classmethod
+    def from_file(cls, filename):
+        of = Orderfile(filename)
+        with open(filename) as order:
+            for line in order.readlines():
+                of.add_row(*line.strip().split(','))
+        return of
+                
+def make_photostream_glom_orderfile():
+    data = []
+    for galdir in dirsonly(glob('content/galleries/*')):
+        galname = os.path.basename(galdir)
+        f = os.path.join('content/galleries', '{}_order.txt'.format(galname))
+        orderfile = Orderfile.from_file(f)
+        data.extend(orderfile.data)
+
+    glom_orderfile = Orderfile('content/photostream_glom_order.txt', reverse=True)
+    for item in data:
+        glom_orderfile.add_row(
+            item['name'],
+            item['xdim'],
+            item['ydim'],
+            item['capture_time'],
+            item['galname'])
+
+    glom_orderfile.write_file(numrows=100)
+
+def sft(s):
+    return s.strftime('%Y:%m:%d %H:%M:%S')
+def spt(s):
+    return datetime.strptime(s.strip(), '%Y:%m:%d %H:%M:%S')
 
 class GalleryGroup():
     def __init__(self, description, photos):
@@ -371,12 +425,12 @@ class MyImage():
                 maybe_dt = self.name.split('-')[1]
                 dt = datetime.strptime(maybe_dt, '%Y%m%d')
                 if dt:
-                    return dt.strftime('%Y:%m:%d %H:%M:%S')
+                    return sft(dt)
             elif 'signal-' in self.name:
                 # maybe this is a signal image with the date in the filename?
                 dt = datetime.strptime(self.name, 'signal-%Y-%m-%d-%H%M%S')
                 if dt:
-                    return dt.strftime('%Y:%m:%d %H:%M:%S')
+                    return sft(dt)
             print("Image at {} has no EXIF for datetime.".format(self.orig_file_path))
             return None
         

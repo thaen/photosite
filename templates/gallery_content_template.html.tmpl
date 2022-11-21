@@ -3,8 +3,8 @@
 <UL class="gallery">
   {% for photo in group.photos %}
   <LI>
-    <A HREF="/{{galname}}/{{photo.name}}.html">
-      <IMG SRC="/{{galname}}/thumbnails/{{photo.name}}.jpg"
+    <A HREF="/{{photo.galname}}/{{photo.name}}.html">
+      <IMG SRC="/{{photo.galname}}/thumbnails/{{photo.name}}.jpg"
 	   loading="lazy"
 	   class="galthumb"
 	   width="{{photo.xdim}}"
