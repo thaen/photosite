@@ -5,13 +5,6 @@
   </DIV>
   <DIV class="column">
     <DIV class="padded">
-      <SPAN class=header>Recent.</SPAN><BR/>
-      I have a real domain now! I can update photos from my phone. Galleries are now separated into months.
-      <!-- A HREF="/static/blog.html">Blog</A><BR/ -->
-      <A HREF="music.html">Music</A>
-    </DIV>
-
-    <DIV class="padded">
       <SPAN class=header>Photos.</SPAN><BR/>
       {% for gallery in galleries %}
       <A HREF="/{{ gallery.dir }}/">{{ gallery.name }}</A><BR/>
@@ -25,14 +18,8 @@
       <A HREF="/static/to_my_unborn_child.html">to my unborn child</A><br/>
       <A HREF="/static/tetris01.pdf">*the* tetris strategy guide</A>
     </DIV>
-  </DIV>
   
-  <DIV class="column hide-mobile">
-    <DIV class="padded">
-      I still write HTML like it's 1999. I may try to "learn" things as I do this, like how the modern web works.
-    </DIV>
-
-    <DIV class="padded">
+    <DIV class="padded hide-mobile">
       <SPAN class=header>Books.</SPAN><BR/>
       PDF book links. There are VERY LARGE, don't download them on a phone.<br/>
       <A HREF="/static/pdfs/2020_book.pdf">2020 book PDF version</A><BR/>
@@ -43,7 +30,7 @@
       <A HREF="/static/pdfs/2014_book.pdf">2014 book PDF version</A><BR/>
     </DIV>
     
-    <DIV class="padded">
+    <DIV class="padded hide-mobile">
       <SPAN class=header>Other.</SPAN><BR/>
       <A HREF="/static/babyshower.zip">baby shower photos, full size.</A>
     </DIV>
