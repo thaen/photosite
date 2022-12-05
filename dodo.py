@@ -280,6 +280,7 @@ def _get_photo_groups(orderfile):
                 'photos': []}
     groups = []
     for photo in of.data:
+        photo['htmlid'] = 'l' + photo['name'].replace('.', '_')
         desc = "{} {}".format(
             calendar.month_name[photo['capture_time'].month],
             photo['capture_time'].year)

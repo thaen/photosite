@@ -4,8 +4,8 @@
   <div class="slides">
     {% for group in groups %}
     {% for photo in group.photos %}
-    <div class="swipeable" >
-      <A name="#l{{photo.name}}" id="l{{photo.name}}">
+    <div class="swipeable" id="{{photo.htmlid}}">
+      <A name="#l{{photo.name}}">
 	<IMG SRC="/{{photo.galname}}/large/{{photo.name}}.jpg"
 	     loading="lazy" />
       </A>
