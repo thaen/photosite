@@ -4,9 +4,11 @@
   <div class="slides">
     {% for group in groups %}
     {% for photo in group.photos %}
-    <div class="swipeable" id="{{photo.name}}">
-      <IMG SRC="/{{photo.galname}}/large/{{photo.name}}.jpg"
-	   loading="lazy" />
+    <div class="swipeable" >
+      <A name="#l{{photo.name}}" id="l{{photo.name}}">
+	<IMG SRC="/{{photo.galname}}/large/{{photo.name}}.jpg"
+	     loading="lazy" />
+      </A>
     </div>
     {% endfor %}
     {% endfor %}
@@ -33,7 +35,14 @@
 	  entry.target.classList.add('executed');
       });
   }
-  // Use the observer to observe an element
+  // Chrome sometimes seems to skip the whole "obey the anchor link" thing, so force it.
+  setTimeout(function() {
+      console.log(location.hash);
+      document
+	  .querySelector(location.hash)
+	  .scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 300);
+  // Don't add observers right away. This avoids racing actual page loads and updating the hash while building the page.
   setTimeout(function() {
       document.querySelectorAll('.swipeable').forEach(elem => {
 	  observer.observe( elem )
