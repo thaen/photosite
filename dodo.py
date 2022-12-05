@@ -116,6 +116,7 @@ def task_gallery_html():
         galname = os.path.basename(galdir)
         targetdir = _sitepath(galdir)
         target = os.path.join(targetdir, 'index.html')
+        swipetarget = os.path.join(targetdir, 'swipe.html')
         orderfile = os.path.join('content/galleries', '{}_order.txt'.format(galname))
         yield {
             'name': target,
@@ -128,6 +129,16 @@ def task_gallery_html():
             'targets': [target],
             'actions': [(make_stream_html, [orderfile, target, galname])]
             }
+        yield {
+            'name': swipetarget,
+            'task_dep': ['orderfiles', 'thumbs', 'larges'],
+            'file_dep': [orderfile,
+                         'templates/swipegallery.html.tmpl',
+                         'templates/foot.html',
+                         'templates/head.html'],
+            'targets': [swipetarget],
+            'actions': [(make_swipe_html, [orderfile, swipetarget, galname])]
+        }            
 
         # TODO: This doesn't run at task execution time. It runs at
         # task definition time. Therefore, if the order files change
@@ -290,6 +301,14 @@ def make_stream_html(orderfile, target, galname):
                                                   groups=_get_photo_groups(orderfile))
     
     with open(os.path.join(target), 'w') as fh:
+        fh.write(output_from_parsed_template)
+
+def make_swipe_html(orderfile, swipetarget, galname):
+    template = jenv.get_template('swipegallery.html.tmpl')
+    output_from_parsed_template = template.render(title=galname,
+                                                  galname=galname,
+                                                  groups=_get_photo_groups(orderfile))
+    with open(os.path.join(swipetarget), 'w') as fh:
         fh.write(output_from_parsed_template)
 
 # *******************************************

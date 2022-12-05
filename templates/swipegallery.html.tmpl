@@ -1,0 +1,41 @@
+{% include 'head.html' %}
+<BODY class="swipegallery">
+<div class="slider">
+  <div class="slides">
+    {% for group in groups %}
+    {% for photo in group.photos %}
+    <div class="swipeable" id="{{photo.name}}">
+      <IMG SRC="/{{photo.galname}}/large/{{photo.name}}.jpg"
+	   loading="lazy" />
+    </div>
+    {% endfor %}
+    {% endfor %}
+  </div>
+</div>
+<DIV class="gal-nav gal-home">
+  <A HREF="index.html">Back to gallery</A>
+</DIV>
+
+<SCRIPT>
+  // define an observer instance
+  var observer = new IntersectionObserver(onIntersection, {
+      root: null,   // default is the viewport
+      threshold: .8 // percentage of target's visible area. Triggers "onIntersection"
+  });
+  // callback is called on intersection change
+  function onIntersection(entries, opts) {
+      entries.forEach(entry => {
+	  if (entry.target.classList.contains('executed')) {
+              // https://stackoverflow.com/questions/53214116/intersectionobserver-callback-firing-immediately-on-page-load
+              location.hash = entry.target.id
+          }
+	  entry.target.classList.add('executed');
+      });
+  }
+  // Use the observer to observe an element
+  document.querySelectorAll('.swipeable').forEach(elem => {
+      observer.observe( elem )
+  });
+</SCRIPT>
+
+{% include 'foot.html' %}
