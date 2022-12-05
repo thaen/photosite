@@ -27,15 +27,18 @@
       entries.forEach(entry => {
 	  if (entry.target.classList.contains('executed')) {
               // https://stackoverflow.com/questions/53214116/intersectionobserver-callback-firing-immediately-on-page-load
-              location.hash = entry.target.id
+	      console.log("updating hash " + entry.target.id);
+              location.hash = entry.target.id;
           }
 	  entry.target.classList.add('executed');
       });
   }
   // Use the observer to observe an element
-  document.querySelectorAll('.swipeable').forEach(elem => {
-      observer.observe( elem )
-  });
+  setTimeout(function() {
+      document.querySelectorAll('.swipeable').forEach(elem => {
+	  observer.observe( elem )
+      });
+  }, 2000);  
 </SCRIPT>
 
 {% include 'foot.html' %}
