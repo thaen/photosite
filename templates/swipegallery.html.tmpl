@@ -30,7 +30,8 @@
 	  if (entry.target.classList.contains('executed')) {
               // https://stackoverflow.com/questions/53214116/intersectionobserver-callback-firing-immediately-on-page-load
 	      console.log("updating hash " + entry.target.id);
-              location.hash = entry.target.id;
+//              location.hash = entry.target.id;
+	      history.replaceState(null, null, '#' + entry.target.id);
           }
 	  entry.target.classList.add('executed');
       });
