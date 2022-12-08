@@ -40,7 +40,7 @@ def _sitepath(original):
         return original.replace('content/galleries', 'site')
     if "static" in original:
         return original.replace('content/static', 'site/static')
-
+    
 def _largepath(original):
     # original is like content/galleries/2015_book_photos/foo.jpg
     path = original.replace('content/galleries', 'site')
@@ -221,6 +221,21 @@ def task_music_html():
         'file_dep': ['songs.txt', 'templates/music.html.tmpl'],
         'targets': ['site/music.html'],
         'actions': [make_music_html]}
+
+def task_favicon():
+    yield {
+        'name': 'favicon.ico',
+        'file_dep': ['content/static/favicon.ico'],
+        'targets': ['site/favicon.ico'],
+        'actions': ['cp content/static/favicon.ico site/favicon.ico']}
+
+def task_mainauth():
+    yield {
+        'name': 'main.html',
+        'file_dep': ['content/static/main.html'],
+        'targets': ['site/main.html'],
+        'actions': ['cp content/static/main.html site/main.html']}
+
 def make_music_html():
     class Song():
         def __init__(self, songline):
