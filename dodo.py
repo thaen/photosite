@@ -31,6 +31,8 @@ import subprocess
 from jinja2 import Environment, FileSystemLoader
 jenv = Environment(loader=FileSystemLoader('templates'))
 
+ORDERFILE_LOCATION = "/home/pi/orderfiles"
+
 def _mkdir(targets):
     for target in targets:
         os.makedirs(os.path.dirname(target), exist_ok=True)
@@ -87,7 +89,7 @@ def task_orderfiles():
     '''
     for galdir in dirsonly(glob('content/galleries/*')):
         galname = os.path.basename(galdir)
-        orderfile = os.path.join('content/galleries', '{}_order.txt'.format(galname))
+        orderfile = os.path.join(ORDERFILE_LOCATION, '{}_order.txt'.format(galname))
         deps = glob(os.path.join(galdir, '*'))
         reverse = False
         if galname == 'photostream':
@@ -102,7 +104,7 @@ def task_orderfiles():
 def task_photostream_glom_orderfile():
     yield {
         'name': 'photostream_glom_order.txt',
-        'targets': ['content/photostream_glom_order.txt'],
+        'targets': [ORDERFILE_LOCATION + '/photostream_glom_order.txt'],
         'task_dep': ['orderfiles'],
         'actions': [make_photostream_glom_orderfile] }
         
@@ -117,7 +119,7 @@ def task_gallery_html():
         targetdir = _sitepath(galdir)
         target = os.path.join(targetdir, 'index.html')
         swipetarget = os.path.join(targetdir, 'swipe.html')
-        orderfile = os.path.join('content/galleries', '{}_order.txt'.format(galname))
+        orderfile = os.path.join(ORDERFILE_LOCATION, '{}_order.txt'.format(galname))
         yield {
             'name': target,
             'task_dep': ['orderfiles', 'thumbs', 'larges'],
@@ -211,7 +213,7 @@ def task_homepage():
     '''
     return {
         'task_dep': ['gallery_html'],
-        'file_dep': ['content/photostream_glom_order.txt'] + glob('templates/*') + glob('content/galleries/*order.txt'),
+        'file_dep': [ORDERFILE_LOCATION + '/photostream_glom_order.txt'] + glob('templates/*') + glob('content/galleries/*order.txt'),
         'targets': ['site/index.html'],
         'actions': [make_index_html]}
 
@@ -265,7 +267,7 @@ def task_static():
 def make_index_html():
     template = jenv.get_template('index.html.tmpl')
 
-    groups = _get_photo_groups('content/photostream_glom_order.txt')
+    groups = _get_photo_groups(ORDERFILE_LOCATION + '/photostream_glom_order.txt')
 
     gallery_dirs = sorted(
         list(
@@ -397,11 +399,11 @@ def make_photostream_glom_orderfile():
     data = []
     for galdir in dirsonly(glob('content/galleries/*')):
         galname = os.path.basename(galdir)
-        f = os.path.join('content/galleries', '{}_order.txt'.format(galname))
+        f = os.path.join(ORDERFILE_LOCATION, '{}_order.txt'.format(galname))
         orderfile = Orderfile.from_file(f)
         data.extend(orderfile.data)
 
-    glom_orderfile = Orderfile('content/photostream_glom_order.txt', reverse=True)
+    glom_orderfile = Orderfile(ORDERFILE_LOCATION + '/photostream_glom_order.txt', reverse=True)
     for item in data:
         glom_orderfile.add_row(
             item['name'],
