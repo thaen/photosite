@@ -142,33 +142,6 @@ def task_gallery_html():
             'actions': [(make_swipe_html, [orderfile, swipetarget, galname])]
         }            
 
-        # TODO: This doesn't run at task execution time. It runs at
-        # task definition time. Therefore, if the order files change
-        # DURING task execution, the previous/next things could be
-        # INCORRECT because they were set before the order files were
-        # changed.
-        #
-        # SOLUTION: https://pydoit.org/task_creation.html#delayed-task-creation
-        of = Orderfile.from_file(orderfile)
-
-        orderdata = of.data
-        prevdata = orderdata[:][:-1]
-        prevdata.insert(0, None)
-        nextdata = orderdata[1:]
-        nextdata.append(None)
-        for prev, cur, next_ in zip(prevdata, orderdata, nextdata):
-            photo_id = cur['name']
-            filename = os.path.join(targetdir, photo_id + '.html')
-
-            yield {
-                'name': filename,
-                'targets': [filename],
-                'task_dep': ['orderfiles', 'thumbs', 'larges'],
-                'file_dep': [orderfile, 'templates/galpage.html', 'templates/foot.html', 'templates/head.html'],
-                'actions': [(make_gallery_html,
-                             [targetdir, prev, photo_id, next_])]
-            }
-        
 def _write_if_changed(content, filename):
     # TODO this task actually only depends on the ones before
     # and after it.  If those don't change, we don't need to
