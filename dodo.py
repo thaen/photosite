@@ -446,8 +446,9 @@ class MyImage():
                 dt = datetime.strptime(self.name, 'WhatsApp_Image_%Y-%m-%d_at_%H.%M.%S_%p')
                 if dt:
                     return sft(dt)
-            print("Image at {} has no EXIF for datetime.".format(self.orig_file_path))
-            return None
+            else:
+                print("Image at {} has no EXIF for datetime.".format(self.orig_file_path))
+                return sft(datetime.now())
         
     def fill_in(self):
         if not all([self.xdim, self.ydim, self.capture_time]):
