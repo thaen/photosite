@@ -441,6 +441,11 @@ class MyImage():
                 dt = datetime.strptime(self.name, 'signal-%Y-%m-%d-%H%M%S')
                 if dt:
                     return sft(dt)
+            elif 'WhatsApp_Image' in self.name:
+                # WhatsApp Image 2021-09-19 at 9.55.59 AM.jpg
+                dt = datetime.strptime(self.name, 'WhatsApp_Image_%Y-%m-%d_at_%H.%M.%S_%p')
+                if dt:
+                    return sft(dt)
             print("Image at {} has no EXIF for datetime.".format(self.orig_file_path))
             return None
         
