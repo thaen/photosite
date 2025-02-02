@@ -79,6 +79,13 @@ def task_thumbs():
                 _mkdir,
                 "magick '{}' -geometry x250 '{}'".format(original, thumbpath)]}
 
+def task_create_orderfiles_dir():
+    '''Create the orderfiles directory.'''
+    return {
+        'actions': [(os.makedirs, [ORDERFILE_LOCATION], {'exist_ok': True})],
+        'targets': [ORDERFILE_LOCATION]
+    }
+
 def task_orderfiles():
     '''
     Read EXIF data from all images and create the order.txt files,
@@ -95,7 +102,7 @@ def task_orderfiles():
         yield {
             'name': orderfile,
             'targets': [orderfile],
-            'task_dep': ['thumbs'],
+            'task_dep': ['thumbs', 'create_orderfiles_dir'],
             'file_dep': deps,
             'actions': [(make_order_file, [galdir, reverse])]}
 

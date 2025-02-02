@@ -28,11 +28,12 @@ pip3 install -r requirements.txt
 3. View the site at http://localhost:8000
 
 ### Setting up a test environment
-1. Create a test gallery:
+1. Create a test data directory:
    ```bash
-   mkdir -p content/galleries/test_gallery
+   mkdir -p test_data/galleries/test_gallery
    ```
-2. Add some test photos to `content/galleries/test_gallery/`
+2. Add some test photos to `test_data/galleries/test_gallery/`
+   - The test photos will be automatically copied to `content/galleries/test_gallery/` when running tests
 3. Add the Python user bin directory to your PATH in your shell's rc file (e.g. `.bashrc`, `.zshrc`):
    ```bash
    export PATH="$PATH:$HOME/Library/Python/3.9/bin"  # For macOS

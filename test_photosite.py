@@ -18,14 +18,21 @@ class TestPhotoSite(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures before each test method."""
         check_doit_in_path()
-        # Clean up any existing site directory
-        if os.path.exists('site'):
-            shutil.rmtree('site')
-        
-        # Ensure we have our test gallery
+        # Clean up any existing directories
+        for dir_to_clean in ['site', 'orderfiles', 'content']:
+            if os.path.exists(dir_to_clean):
+                shutil.rmtree(dir_to_clean)
+
+        # Create content directory
         self.test_gallery = 'content/galleries/test_gallery'
-        self.assertTrue(os.path.exists(self.test_gallery), 
-                       f"Test gallery not found at {self.test_gallery}")
+        os.makedirs(self.test_gallery, exist_ok=True)
+        test_data_path = 'test_data/galleries/test_gallery'
+        if not os.path.exists(test_data_path):
+            raise RuntimeError(f'Test data not found in {test_data_path}')
+        
+        # Copy test photos
+        for photo in glob(os.path.join(test_data_path, '*.jpg')):
+            shutil.copy2(photo, self.test_gallery)
         
         # Get list of test photos
         self.test_photos = glob(os.path.join(self.test_gallery, '*.jpg'))
