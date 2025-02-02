@@ -33,9 +33,15 @@ pip3 install -r requirements.txt
    mkdir -p content/galleries/test_gallery
    ```
 2. Add some test photos to `content/galleries/test_gallery/`
-3. Run the tests:
+3. Add the Python user bin directory to your PATH in your shell's rc file (e.g. `.bashrc`, `.zshrc`):
    ```bash
-   python3 -m unittest test_photosite.py -v
+   export PATH="$PATH:$HOME/Library/Python/3.9/bin"  # For macOS
+   export PATH="$PATH:$HOME/.local/bin"             # For Linux
+   ```
+
+4. Run the tests (make sure to source your rc file first):
+   ```bash
+   source ~/.bashrc && python3 -m unittest test_photosite.py -v
    ```
 
 ## Resources

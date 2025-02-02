@@ -7,11 +7,17 @@ import sys
 from dodo import _sitepath, _largepath, _thumbpath
 
 # Get the doit executable path
-DOIT_PATH = os.path.expanduser('~/Library/Python/3.9/bin/doit')
+def check_doit_in_path():
+    """Check if doit is available in PATH"""
+    try:
+        subprocess.run(['doit', '--version'], capture_output=True, check=True)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        raise RuntimeError('doit command not found in PATH. Please install doit and ensure it\'s in your PATH.')
 
 class TestPhotoSite(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures before each test method."""
+        check_doit_in_path()
         # Clean up any existing site directory
         if os.path.exists('site'):
             shutil.rmtree('site')
@@ -46,7 +52,7 @@ class TestPhotoSite(unittest.TestCase):
 
     def test_large_photo_generation(self):
         """Test generation of large photos."""
-        result = subprocess.run([DOIT_PATH, 'larges'], capture_output=True, text=True)
+        result = subprocess.run(['doit', 'larges'], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, f"Task failed: {result.stderr}")
         
         # Check each test photo has a corresponding large version
@@ -61,7 +67,7 @@ class TestPhotoSite(unittest.TestCase):
 
     def test_thumbnail_generation(self):
         """Test generation of thumbnails."""
-        result = subprocess.run([DOIT_PATH, 'thumbs'], capture_output=True, text=True)
+        result = subprocess.run(['doit', 'thumbs'], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, f"Task failed: {result.stderr}")
         
         # Check each test photo has a corresponding thumbnail
@@ -76,7 +82,7 @@ class TestPhotoSite(unittest.TestCase):
 
     def test_order_file_generation(self):
         """Test generation of order.txt files."""
-        result = subprocess.run([DOIT_PATH, 'orderfiles'], capture_output=True, text=True)
+        result = subprocess.run(['doit', 'orderfiles'], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, f"Task failed: {result.stderr}")
         
         order_file = os.path.join('orderfiles', 'test_gallery_order.txt')
@@ -92,9 +98,9 @@ class TestPhotoSite(unittest.TestCase):
     def test_gallery_html_generation(self):
         """Test generation of gallery HTML files."""
         # We need thumbnails and order files before generating HTML
-        subprocess.run([DOIT_PATH, 'thumbs'], check=True)
-        subprocess.run([DOIT_PATH, 'orderfiles'], check=True)
-        result = subprocess.run([DOIT_PATH, 'gallery_html'], capture_output=True, text=True)
+        subprocess.run(['doit', 'thumbs'], check=True)
+        subprocess.run(['doit', 'orderfiles'], check=True)
+        result = subprocess.run(['doit', 'gallery_html'], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, f"Task failed: {result.stderr}")
         
         # Check for gallery index
@@ -113,10 +119,10 @@ class TestPhotoSite(unittest.TestCase):
     def test_homepage_generation(self):
         """Test generation of main index.html."""
         # Need all prerequisites
-        subprocess.run([DOIT_PATH, 'thumbs'], check=True)
-        subprocess.run([DOIT_PATH, 'orderfiles'], check=True)
-        subprocess.run([DOIT_PATH, 'gallery_html'], check=True)
-        result = subprocess.run([DOIT_PATH, 'homepage'], capture_output=True, text=True)
+        subprocess.run(['doit', 'thumbs'], check=True)
+        subprocess.run(['doit', 'orderfiles'], check=True)
+        subprocess.run(['doit', 'gallery_html'], check=True)
+        result = subprocess.run(['doit', 'homepage'], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, f"Task failed: {result.stderr}")
         
         homepage = os.path.join('site', 'index.html')
