@@ -1,8 +1,47 @@
-https://css-tricks.com/snippets/css/a-guide-to-flexbox/
+# Photo Site Builder
 
-https://web.dev/browser-level-image-lazy-loading/
+A static site generator for photo galleries using Python and doit.
 
-for github operations:
+## Requirements
 
-* there's probably an auth token in your bashrc
-* gh auth login first, then git as normal
+### System Dependencies
+- Python 3.9 or higher
+- ImageMagick (`convert` command for thumbnail generation)
+
+### Python Dependencies
+Install Python dependencies using:
+```bash
+pip3 install -r requirements.txt
+```
+
+## Development
+
+### Building and Serving the Site
+1. Build the site:
+   ```bash
+   doit
+   ```
+2. Start a local web server:
+   ```bash
+   cd site && python3 -m http.server 8000
+   ```
+3. View the site at http://localhost:8000
+
+### Setting up a test environment
+1. Create a test gallery:
+   ```bash
+   mkdir -p content/galleries/test_gallery
+   ```
+2. Add some test photos to `content/galleries/test_gallery/`
+3. Run the tests:
+   ```bash
+   python3 -m unittest test_photosite.py -v
+   ```
+
+## Resources
+- [CSS Flexbox Guide](https://css-tricks.com/snippets/css/a-guide-to-flexbox/)
+- [Browser Image Lazy Loading](https://web.dev/browser-level-image-lazy-loading/)
+
+## GitHub Operations
+* There's probably an auth token in your bashrc
+* Run `gh auth login` first, then git as normal

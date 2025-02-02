@@ -29,7 +29,7 @@ from exif import Image
 from jinja2 import Environment, FileSystemLoader
 jenv = Environment(loader=FileSystemLoader('templates'))
 
-ORDERFILE_LOCATION = "/home/pi/orderfiles"
+ORDERFILE_LOCATION = "orderfiles"
 
 def _mkdir(targets):
     for target in targets:
@@ -77,7 +77,7 @@ def task_thumbs():
             'targets': [thumbpath],
             'actions': [
                 _mkdir,
-                "convert -geometry x250 '{}' '{}'".format(original, thumbpath)]}
+                "magick '{}' -geometry x250 '{}'".format(original, thumbpath)]}
 
 def task_orderfiles():
     '''
@@ -201,13 +201,6 @@ def task_favicon():
         'file_dep': ['content/static/favicon.ico'],
         'targets': ['site/favicon.ico'],
         'actions': ['cp content/static/favicon.ico site/favicon.ico']}
-
-def task_mainauth():
-    yield {
-        'name': 'main.html',
-        'file_dep': ['content/static/main.html'],
-        'targets': ['site/main.html'],
-        'actions': ['cp content/static/main.html site/main.html']}
 
 def make_music_html():
     class Song():
