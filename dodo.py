@@ -17,17 +17,15 @@ file as small as possible.
 '''
 
 import calendar
-
+from datetime import datetime
 from glob import glob
 import os
+import subprocess
 import sys
 
+# Third-party imports
 from doit import create_after
-
-from datetime import datetime
 from exif import Image
-import subprocess
-
 from jinja2 import Environment, FileSystemLoader
 jenv = Environment(loader=FileSystemLoader('templates'))
 
