@@ -1,5 +1,6 @@
 site/
-.doit.db
+.doit.db*
+orderfiles/
 __pycache__
 *.jpg
 *.pdf

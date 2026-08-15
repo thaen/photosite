@@ -1,6 +1,14 @@
 # Photo Site Builder
 
-A static site generator for photo galleries using Python and doit.
+A simple and efficient static site generator for photo galleries using Python.
+
+## Features
+
+- Generates photo galleries with thumbnails and full-size views
+- Groups photos by capture date
+- Only processes photos when needed (smart incremental builds)
+- Supports custom CSS and static files
+- Mobile-friendly swipe view for photos
 
 ## Requirements
 
@@ -14,36 +22,61 @@ Install Python dependencies using:
 pip3 install -r requirements.txt
 ```
 
-## Development
+## Usage
+
+### Directory Structure
+```
+├── content/
+│   ├── galleries/     # Your photo galleries go here
+│   │   ├── gallery1/
+│   │   └── gallery2/
+│   └── static/        # Static files (CSS, JS, etc.)
+└── templates/         # HTML templates
+```
 
 ### Building and Serving the Site
-1. Build the site:
-   ```bash
-   doit
-   ```
-2. Start a local web server:
-   ```bash
-   cd site && python3 -m http.server 8000
-   ```
-3. View the site at http://localhost:8000
 
-### Setting up a test environment
-1. Create a test data directory:
+1. Build and serve the site in one command:
+   ```bash
+   ./build_site.py --serve
+   ```
+   Then view at http://localhost:8000
+
+2. Additional options:
+   ```bash
+   ./build_site.py --force    # Force rebuild all files
+   ./build_site.py --port 8080 # Use a different port
+   ```
+
+### Development and Testing
+
+1. Create a test gallery:
    ```bash
    mkdir -p test_data/galleries/test_gallery
    ```
-2. Add some test photos to `test_data/galleries/test_gallery/`
-   - The test photos will be automatically copied to `content/galleries/test_gallery/` when running tests
-3. Add the Python user bin directory to your PATH in your shell's rc file (e.g. `.bashrc`, `.zshrc`):
+
+2. Add test photos to `test_data/galleries/test_gallery/`
+
+3. Run the tests:
    ```bash
-   export PATH="$PATH:$HOME/Library/Python/3.9/bin"  # For macOS
-   export PATH="$PATH:$HOME/.local/bin"             # For Linux
+   python3 -m unittest test_new_photosite.py -v
    ```
 
-4. Run the tests (make sure to source your rc file first):
-   ```bash
-   source ~/.bashrc && python3 -m unittest test_photosite.py -v
-   ```
+## How It Works
+
+1. Photo Processing:
+   - Creates thumbnails (250px height) for gallery view
+   - Preserves full-size photos for detailed view
+   - Extracts EXIF data for date-based grouping
+
+2. HTML Generation:
+   - Generates gallery index pages with thumbnails
+   - Creates swipe view for full-size photos
+   - Builds homepage with gallery links
+
+3. Static Files:
+   - Copies CSS and other static files
+   - Supports custom styling and assets
 
 ## Resources
 - [CSS Flexbox Guide](https://css-tricks.com/snippets/css/a-guide-to-flexbox/)

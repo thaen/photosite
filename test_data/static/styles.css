@@ -1,0 +1,273 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.padded {
+    padding: 5px;
+}
+A {
+    text-decoration: none;
+}
+P {
+    text-indent: 2em;
+}
+BODY {
+    font-family: 'Hind Siliguri', sans-serif;
+    
+}
+.header {
+    font-size:150%;
+    font-weight: bold;
+}
+DIV.blog {
+    width:80%;
+    float:left;
+    padding:15px;
+}
+UL.gallery {
+    display: flex;
+    flex-wrap: wrap;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+UL.gallery LI {
+    padding: 1px 0px 0px 1px;
+    flex-grow:1;
+}
+UL.gallery LI:last-child {
+    flex-grow: 10;
+}
+UL.gallery IMG {
+    max-height: 100%;
+    min-width: 100%;
+    object-fit: cover;
+    vertical-align: bottom;
+}
+.galthumb {
+    max-width: 100%;
+}
+@media screen and (min-width:0px) and (max-width:440px) {
+    /* PHONES */
+    .galthumb {
+        height: 120px;
+        width:auto;
+    }
+    .hide-mobile {
+	display:none !important;
+    }
+    .photostream {
+        width: 60%;
+    }
+
+    .photostream img {
+	height: 100px;
+	width: auto;
+    }
+    UL.music LI {
+	width: 100%;
+    }
+    UL.music .yt {
+	width: 100vw;
+	height: 56vw;
+    }
+}
+@media screen and (min-width:441px) {
+    /* BIG SCREENS */
+    .galthumb {
+        height: 200px;
+        width: auto;
+    }
+    .photostream {
+        width: 65%;
+    }
+
+    .photostream img {
+	max-height: 100%;
+	min-width: 100%;
+	object-fit: cover;
+	vertical-align: bottom;
+    }
+    UL.music LI {
+	width: 30%;
+    }
+    UL.music .yt {
+	width: 30vw;
+	height: 17vw;
+    }
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+}
+.column {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 100%;
+    flex: 1;
+}
+
+/* Individual gallery pages */
+.gal-nav a {
+    padding: 10px 20px;
+    background-color: #aaaa;
+    color: white;
+}
+.gal-prev {
+    position: fixed;
+    bottom: 5px;
+    left: 0px;
+}
+.gal-next {
+    position: fixed;
+    bottom: 5px;
+    right: 0px;
+}
+.gal-home {
+    position: fixed;
+    bottom: 5px;
+    left: 50%;
+    /* bring your own prefixes */
+    transform: translate(-50%, 0);
+}
+.gal-imgbox {
+    display: grid;
+    height: 100%;
+}
+.gal-center-fit {
+    max-width: 100%;
+    max-height: 100vh;
+    margin: auto auto;
+}
+.dark {
+    background-color: #111;
+}
+.lighttext {
+    color: white;
+}
+UL.music {
+    list-style-type: none;
+}
+UL.music LI {
+    display: inline-block;
+    vertical-align: top;
+    background-color: #eee;
+}
+
+
+
+.slider {
+    width: 100%; 
+  text-align: center;
+  overflow: hidden;
+}
+
+.slides {
+  display: flex;
+  
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  
+  /*
+  scroll-snap-points-x: repeat(300px);
+  scroll-snap-type: mandatory;
+  */
+}
+.slides::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.slides::-webkit-scrollbar-thumb {
+  background: black;
+}
+.slides::-webkit-scrollbar-track {
+  background: transparent;
+}
+.slides > div {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+  width: 100%;
+  height: 100vh;
+  border-radius: 10px;
+  background: #eee;
+  transform-origin: center center;
+  transform: scale(1);
+  transition: transform 0.5s;
+  position: relative;
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 100px;
+}
+.slides > div:target {
+/*   transform: scale(0.8); */
+}
+.author-info {
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  padding: 0;
+  text-align: center;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  margin: 0;
+}
+.author-info a {
+  color: white;
+}
+.swipegallery img {
+  object-fit: contain;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.slider > a {
+  display: inline-flex;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: white;
+  text-decoration: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin: 0;
+  position: relative;
+}
+.slider > a:active {
+  top: 1px;
+}
+.slider > a:focus {
+  background: #000;
+}
+
+/* Don't need button navigation */
+@supports (scroll-snap-type) {
+  .slider > a {
+    display: none;
+  }
+}
+
+body.swipegallery {
+  height: 100%;
+  overflow: hidden;
+}
+body.swipegallery {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Ropa Sans', sans-serif;
+  margin: 0;
+  padding: 0;
+}
