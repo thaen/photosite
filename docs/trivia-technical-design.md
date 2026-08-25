@@ -169,14 +169,12 @@ blocking data error.
 The application supports portrait phone viewports only. The target minimum is 320 by 568 CSS
 pixels. No desktop layout is designed or tested.
 
-Each state fits within `100dvh` with `overflow: hidden` on the document and its application root.
-There are no scroll containers, horizontal scroll, accordions containing required information, or
+Common states should fit within `100dvh`, but the document retains normal vertical scrolling for
+long questions and mobile refresh gestures. There is no horizontal scroll, no clipping, and no
 truncated question or answer strings. Button text and category names use the full configured label.
 
-Typography may use responsive CSS within an agreed readable range. If a question or answer cannot
-fit in the fixed screen without scrolling or making text smaller than that range, the app displays
-a blocking data error that names the question identifier. It does not clip, shorten, paraphrase,
-or substitute that question.
+Typography may use responsive CSS within an agreed readable range. Long questions and answers may
+extend the page vertically. The app does not clip, shorten, paraphrase, or substitute that text.
 
 The layout is therefore a data contract as well as a CSS contract. A question bank cannot be marked
 ready until its longest question and answer have been checked at the minimum viewport.
@@ -362,8 +360,8 @@ selection remains random.
 8. A player with six wedges enters final category choice; a correct final answer reaches Winner.
 9. Refreshing every state restores the same active player, question, and score.
 10. Valid setup URL parameters populate setup; malformed parameters show errors.
-11. At 320 by 568 and 390 by 844, every state has no vertical or horizontal scroll and all required
-    controls are reachable.
+11. At 320 by 568 and 390 by 844, common states remain compact, horizontal scrolling never occurs,
+    and long question content remains reachable through normal vertical scrolling.
 12. Empty categories, invalid bank data, absent content review, exhausted difficulty/category
    combinations, storage failure, and oversized questions show their explicit errors instead of a
    replacement behavior.

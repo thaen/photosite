@@ -41,7 +41,7 @@ test('correct reaches the summary and hands off to the next player', async ({ pa
   await page.getByRole('button', { name: 'History' }).click();
   await page.getByRole('button', { name: 'Correct', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Correct!' })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Pass the phone to/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Next turn' })).toBeVisible();
 });
 
 test('the summary reflects scoring on later turns', async ({ page }) => {
@@ -50,17 +50,30 @@ test('the summary reflects scoring on later turns', async ({ page }) => {
   await page.getByRole('button', { name: 'Correct', exact: true }).click();
   await expect(page.locator('.score').filter({ hasText: ': 1/6' })).toHaveCount(1);
   await expect(page.locator('.pie').evaluateAll(pies => pies.some(pie => pie.style.getPropertyValue('--c3') === '#b66b27'))).resolves.toBeTruthy();
-  await page.getByRole('button', { name: /Pass the phone to/ }).click();
+  await page.getByRole('button', { name: 'Next turn' }).click();
   await page.getByRole('button', { name: 'Science' }).click();
   await page.getByRole('button', { name: 'Correct', exact: true }).click();
   await expect(page.locator('.score').filter({ hasText: ': 1/6' })).toHaveCount(2);
   await expect(page.locator('.pie').evaluateAll(pies => pies.some(pie => pie.style.getPropertyValue('--c4') === '#6b52a3'))).resolves.toBeTruthy();
 });
 
-test('phone viewport has no document scrolling in setup and question screens', async ({ page }) => {
-  await expect(page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight)).resolves.toBeTruthy();
+test('a filled category is disabled on that player’s next turn', async ({ page }) => {
+  await page.getByRole('button', { name: 'Cori', exact: true }).click();
+  await page.getByRole('button', { name: 'Ethan', exact: true }).click();
+  await page.getByRole('button', { name: 'Start Game' }).click();
+  const first = await page.locator('.category').first().getAttribute('data-cat');
+  await page.locator('.category').first().click();
+  await page.getByRole('button', { name: 'Correct', exact: true }).click();
+  await page.getByRole('button', { name: 'Next turn' }).click();
+  await page.locator('.category').nth(1).click();
+  await page.getByRole('button', { name: 'Incorrect', exact: true }).click();
+  await page.getByRole('button', { name: 'Next turn' }).click();
+  await expect(page.locator(`.category[data-cat="${first}"]`)).toBeDisabled();
+});
+
+test('phone viewport permits vertical scrolling but has no horizontal scrolling', async ({ page }) => {
+  await expect(page.evaluate(() => getComputedStyle(document.documentElement).overflowY)).resolves.not.toBe('hidden');
   await page.getByRole('button', { name: 'Start Game' }).click();
   await page.getByRole('button', { name: 'Geography' }).click();
-  await expect(page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight)).resolves.toBeTruthy();
   await expect(page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).resolves.toBeTruthy();
 });
