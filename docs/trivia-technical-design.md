@@ -2,9 +2,9 @@
 
 ## Status
 
-This document specifies the application before implementation. It does not authorize a Trivia
-screen, question-bank import, or S3 publication. The names, state transitions, and test cases
-below are the proposed contract for review.
+This document specifies the application before implementation. It authorizes a development-host
+prototype and automated tests, but not S3 publication. The names, state transitions, and test
+cases below are the contract for that work.
 
 ## Product boundary
 
@@ -49,25 +49,29 @@ Each name is a large toggle button. Tapping a selected name unselects it, and ta
 unselected name selects it. The screen shows no hidden roster, custom-name field, or automatic
 player substitution in the first release.
 
+Each selected person has a Difficulty section with large Easy, Medium, and Hard toggle buttons.
+The selected difficulties are part of that player's setup, not a property of the whole game.
+Nora, Cori, and Ethan start with Easy, Medium, and Hard selected. Claire starts with Easy and
+Medium selected. A person cannot start without at least one selected difficulty; the setup screen
+names that person in a blocking error. Unselected people have no active difficulty controls.
+
 At least two people must be selected. Pressing Start Game with fewer than two selected people
 shows a blocking, plain-language error on the setup screen: `Select at least two players.` The app
 does not silently reselect a person.
 
-### Question-bank selection
+### Question set
 
-The screen also has one large button for each locally bundled question bank. A bank button shows
-its name and its review status. The first release has no Family or Adult label, no age filter, and
-no age-appropriateness field. Exactly one bank is selected.
-
-The first bank in the registry with `default: true` is selected when the URL does not name a bank.
-If the registry has no default bank, or the selected bank is absent or invalid, the app shows a
-blocking error. It does not select a different bank without showing the problem.
+The first release uses one locally bundled Trivia API review bank. It has the strongest current
+combination of broad source categories, source difficulty labels, and local cached data. The setup
+screen has no question-bank selection control. The first release has no Family or Adult label, no
+age filter, and no age-appropriateness field.
 
 ### Start Game
 
-Start Game creates a new game, uses the selected bank and people, performs a Fisher–Yates shuffle
-of the selected player identifiers, saves the game state, and enters the first category-choice
-screen. The shuffle order is the turn order for the whole game.
+Start Game creates a new game, uses the bundled bank and the selected people with their selected
+difficulties, performs a Fisher–Yates shuffle of the selected player identifiers, saves the game
+state, and enters the first category-choice screen. The shuffle order is the turn order for the
+whole game.
 
 Starting a new game replaces a saved unfinished game. The setup screen must ask for confirmation
 when an unfinished game exists, because replacement loses the saved score and used-question list.
@@ -98,9 +102,11 @@ The page identifies the active player and reader in text such as `Alice’s turn
 Bob.` It displays six large category buttons, each with its category color and full text label.
 Bob reads the choices. Alice chooses aloud. Bob taps the chosen category.
 
-Before displaying a question, the app selects one unused question in the selected bank and category.
-Question selection is random within the eligible set. It records the selected question identifier
-in the saved state before rendering it, so a refresh cannot draw a different question.
+Before displaying a question, the app selects one unused question in the bundled bank and category
+whose source difficulty is selected for the active player. Question selection is random within that
+eligible set. It records the selected question identifier in the saved state before rendering it,
+so a refresh cannot draw a different question. A selected category with no eligible question is a
+blocking data error that names the player, category, and selected difficulty set.
 
 ### 2. Question and judging
 
@@ -111,12 +117,18 @@ The question screen has these items in this order, all visible without scrolling
 3. Full question text.
 4. Every source answer choice, when the source provides choices.
 5. Full correct answer text.
-6. A source difficulty label only when the question has a difficulty value.
-7. Correct, Incorrect, and Skip Question buttons.
+6. A Hide Answer button.
+7. A source difficulty label only when the question has a difficulty value.
+8. Correct, Incorrect, and Skip Question buttons.
 
 Bob reads the question and any choices to Alice, hears the answer, consults the visible correct
 answer, and presses Correct or Incorrect. The application does not attempt automatic answer
 matching.
+
+Hide Answer conceals the full answer and changes its own label to Show Answer. It does not conceal
+the question, answer choices, category, difficulty, or judgement buttons. Show Answer restores the
+full answer. This visibility state is saved before redraw, so a refresh preserves it while the
+phone is with the active player.
 
 Correct fills the active player's wedge for the selected category if it is empty. A correct answer
 in a category already filled does not create a second wedge. Incorrect leaves the score unchanged.
@@ -274,9 +286,9 @@ Each question has this required shape:
 
 The app displays `sourceDifficulty` when it exists. It shows the source choices when they exist,
 in a saved randomized order that remains stable across refresh. The first version selects from the
-chosen bank and category. It does not infer, store, display, or filter age. Family and Adult bank
-labels are deferred to a later age-appropriateness pass. No future label permits sexually explicit
-content.
+bundled bank and category using the active player's selected source difficulties. It does not infer,
+store, display, or filter age. Family and Adult bank labels are deferred to a later
+age-appropriateness pass. No future label permits sexually explicit content.
 
 The acquisition cache retains raw source data even when it lacks age metadata. A playable bank is
 a reviewed export from that cache. The bank validator rejects duplicate question identifiers,
@@ -291,26 +303,26 @@ The setup choices are shareable URL parameters. Runtime game state is local brow
 
 | Location | Data | Reason |
 | --- | --- | --- |
-| `?bank=<bank-id>` | selected question bank | Shareable setup choice. |
 | `?players=<comma-separated-player-ids>` | selected default people | Shareable setup choice. |
+| `?difficulties=<player-id:levels;...>` | selected difficulty levels per person | Shareable setup choice. |
 | `localStorage: trivia.config.v1` | last valid setup selection | Restores setup after a return visit. |
 | `localStorage: trivia.game.v1` | active game state and used question identifiers | Restores a refresh during play. |
 
-An unknown bank identifier, unknown player identifier, duplicated player identifier, malformed
-parameter, unavailable local storage, or unsupported saved-state version is a visible error. The
-app does not silently ignore or repair malformed state.
+An unknown player identifier, duplicated player identifier, malformed difficulty selection,
+unavailable local storage, or unsupported saved-state version is a visible error. The app does not
+silently ignore or repair malformed state.
 
-The saved game state contains: schema version, chosen bank, player scores, shuffled turn order,
-active-turn index, current state name, current category, current question identifier, used-question
-identifiers, and final-question status. It contains no answers from the user, analytics, account
-data, or network identifiers.
+The saved game state contains: schema version, player difficulty selections, player scores,
+shuffled turn order, active-turn index, current state name, current category, current question
+identifier, answer visibility, used-question identifiers, and final-question status. It contains no
+answers from the user, analytics, account data, or network identifiers.
 
 ## Errors and unsupported conditions
 
 There are no fallbacks. Every expected failure has a plain error screen that names the failed
 condition and provides only a safe return to setup when that does not discard an active game.
 
-- No selected bank or invalid bank data: show the bank validation error.
+- Invalid bundled bank data: show the bank validation error.
 - Fewer than two selected players: prevent start and state the required count.
 - No unused question in a category: show bank and category identifiers.
 - Corrupt or unsupported saved game: show the storage schema error and provide Start New Game.
@@ -326,16 +338,23 @@ color is not the sole signal. Controls meet a 44 by 44 CSS-pixel minimum target.
 reader, current category, and score result are text, not icon-only indicators. Focus order follows
 the visual order, although the intended use is touch.
 
-## Test plan for the later prototype
+## Automated test plan
 
 The prototype is ready for review only after these checks pass:
 
-1. Setup starts with Nora, Claire, Cori, and Ethan selected and a bank selected.
-2. Tapping any person toggles only that person; Start rejects fewer than two selections.
-3. Start produces a permutation of the selected people and does not repeat an identifier.
-4. Every category button selects an unused question from its own category.
-5. The question view shows the complete prompt, every supplied answer choice, complete correct
-   answer, and source difficulty only when present; it has no timer.
+The prototype has Playwright browser tests, run against the built development preview. The test
+suite uses a deterministic test bank and seeded random selection only in test mode; production
+selection remains random.
+
+1. Setup starts with all four people selected; Claire has Easy and Medium, while every other person
+   has Easy, Medium, and Hard. Toggling a person affects only that person, and Start rejects fewer
+   than two people or a selected person with no difficulty.
+2. Start produces a permutation of the selected people and does not repeat an identifier.
+3. Every category button selects an unused question from its own category and from the active
+   player's selected difficulty set.
+4. The question view shows the complete prompt, every supplied answer choice, complete correct
+   answer, Hide Answer, source difficulty only when present, and no timer. Hide and Show preserve
+   the answer-visibility state across a refresh.
 6. Correct fills only the active player’s first empty wedge for that category; Incorrect changes no
    wedge; summary advances to the next shuffled person.
 7. Skip replaces the question in the same category for the same player and never repeats a used
@@ -345,13 +364,9 @@ The prototype is ready for review only after these checks pass:
 10. Valid setup URL parameters populate setup; malformed parameters show errors.
 11. At 320 by 568 and 390 by 844, every state has no vertical or horizontal scroll and all required
     controls are reachable.
-12. Empty categories, invalid bank data, absent content review, exhausted categories, storage
-    failure, and oversized questions show their explicit errors instead of a replacement behavior.
+12. Empty categories, invalid bank data, absent content review, exhausted difficulty/category
+   combinations, storage failure, and oversized questions show their explicit errors instead of a
+   replacement behavior.
 
-## Decisions requested before implementation
-
-1. Which six existing source categories should the first reviewed bank use?
-2. Should a source label appear exactly as supplied, or is capitalization and underscore-to-space
-   normalization acceptable?
-3. Should the first review sample contain one source-difficulty level or all source-difficulty
-   levels?
+The first prototype uses six exact Trivia API labels, with reversible presentation normalization:
+Arts and Literature, Film and TV, Geography, History, Science, and Society and Culture.
