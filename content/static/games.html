@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#173754">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <title>Games | Troubles Roll By</title>
+    <style>
+      :root { color-scheme: light; font-family: ui-rounded, "Avenir Next", Avenir, system-ui, sans-serif; }
+      * { box-sizing: border-box; }
+      body { min-height: 100vh; margin: 0; color: #12283d; background: #eef4f6; }
+      main { width: min(100% - 2rem, 68rem); margin: 0 auto; padding: clamp(2rem, 7vw, 5rem) 0; }
+      header { max-width: 44rem; margin-bottom: 2.75rem; }
+      h1 { margin: 0; color: #173754; font-size: clamp(2.75rem, 9vw, 5.5rem); letter-spacing: -.065em; line-height: .93; }
+      header p { margin: 1.25rem 0 0; font-size: clamp(1.1rem, 2.5vw, 1.35rem); line-height: 1.5; }
+      .games { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1.25rem; }
+      .game { min-height: 17rem; padding: 1.65rem; border-radius: 1.4rem; box-shadow: 0 .45rem 0 rgba(18, 40, 61, .12); }
+      .game h2 { margin: .55rem 0; font-size: clamp(1.65rem, 4vw, 2.2rem); letter-spacing: -.04em; }
+      .game p { margin: 0; font-size: 1.08rem; line-height: 1.45; }
+      .live { display: flex; flex-direction: column; color: #fff; background: #173754; }
+      .live a { width: fit-content; margin-top: auto; padding: .7rem 1rem; border-radius: .7rem; color: #173754; background: #f6c85f; font-weight: 750; text-decoration: none; }
+      .live a:focus-visible, .live a:hover { outline: .2rem solid #fff; outline-offset: .18rem; }
+      .coming { color: #173754; background: #f6c85f; }
+      .eyebrow { margin: 0; font-size: .8rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+      footer { margin-top: 3rem; color: #496272; font-size: .95rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Games</h1>
+        <p>Small games for a table, a couch, or a phone passed around the room.</p>
+      </header>
+      <section class="games" aria-label="Games">
+        <article class="game live">
+          <p class="eyebrow">Ready to play</p>
+          <h2>Scattergories</h2>
+          <p>Get a letter, race the clock, and find answers that no one else has.</p>
+          <a href="/static/scattergories/">Play Scattergories</a>
+        </article>
+        <article class="game coming">
+          <p class="eyebrow">In design</p>
+          <h2>Trivia</h2>
+          <p>A category-and-wedge game for mixed-age teams, with questions chosen for the people playing.</p>
+        </article>
+      </section>
+      <footer>Troubles Roll By</footer>
+    </main>
+  </body>
+</html>
