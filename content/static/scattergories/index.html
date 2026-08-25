@@ -241,6 +241,7 @@
               <div class="label categories-main-label">
                 <button class="clickable-label" @click="editWordlist">
                   Categories</button
+                ><span class="active-pack-label">{{ activePackName }}</span
                 ><button @click="startAdding()">
                   Add <span v-if="!customCategories.length">A Category</span>
                   <span v-if="customCategories.length"
@@ -392,8 +393,8 @@
       src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"
     ></script>
     <script src="fixed-packs.js?v=20260823-6"></script>
-    <script src="dist/bundle.js?v=20260824-1" charset="utf-8"></script>
-    <script src="fixed-pack-library.js?v=20260823-2"></script>
+    <script src="dist/bundle.js?v=20260824-2" charset="utf-8"></script>
+    <script src="fixed-pack-library.js?v=20260824-3"></script>
     <script
       async
       src="https://www.googletagmanager.com/gtag/js?id=G-9XPVC4ZRP1"

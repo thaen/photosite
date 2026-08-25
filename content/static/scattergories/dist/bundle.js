@@ -53612,7 +53612,7 @@
       );
     }
     s.a.use(c.a);
-    var T = { initialGameSeconds: 120, numberOfWords: 12, wordlist: k },
+    var T = { initialGameSeconds: 180, numberOfWords: 12, wordlist: k },
       I = {
         IN_GAME: "IN_GAME",
         GAME_OVER: "GAME_OVER",
@@ -53664,6 +53664,7 @@
           {
             currentLetter: "A",
             currentWords: [],
+            activePackName: "List 1",
             currentTime: T.initialGameSeconds,
             wordlist: k,
             allWords: k.slice(0),
@@ -53693,6 +53694,7 @@
       methods: {
         generateWords: function () {
           var pack = window.PHOTOSITE_FIXED_PACKS[D];
+          this.activePackName = pack.name;
           this.currentWords = pack.categories.map(function (category) {
             return { category: category, isCustom: !1, isAdult: !1 };
           });
