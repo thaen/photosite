@@ -29,6 +29,13 @@ test('difficulty selection controls question eligibility and answer visibility p
   await expect(page.getByText(/^Answer:/)).toBeVisible();
 });
 
+test('New Game returns an active game to setup', async ({ page }) => {
+  await page.getByRole('button', { name: 'Start Game' }).click();
+  await expect(page.getByRole('button', { name: 'New Game' })).toBeVisible();
+  await page.getByRole('button', { name: 'New Game' }).click();
+  await expect(page.getByRole('heading', { name: "Who's playing?" })).toBeVisible();
+});
+
 test('correct reaches the summary and hands off to the next player', async ({ page }) => {
   await page.getByRole('button', { name: 'Start Game' }).click();
   await page.getByRole('button', { name: 'History' }).click();
