@@ -56,9 +56,8 @@ does not silently reselect a person.
 ### Question-bank selection
 
 The screen also has one large button for each locally bundled question bank. A bank button shows
-its name and its review status. It may show `Family` or `Adults` only when that label comes from
-reviewed age-appropriateness metadata and the bank's difficulty range. Source difficulty alone is
-not an age label. Exactly one bank is selected.
+its name and its review status. The first release has no Family or Adult label, no age filter, and
+no age-appropriateness field. Exactly one bank is selected.
 
 The first bank in the registry with `default: true` is selected when the URL does not name a bank.
 If the registry has no default bank, or the selected bank is absent or invalid, the app shows a
@@ -110,12 +109,14 @@ The question screen has these items in this order, all visible without scrolling
 1. Active-player and reader names.
 2. Category color and category name.
 3. Full question text.
-4. Full answer text.
-5. A source difficulty label only when the question has a difficulty value.
-6. Correct, Incorrect, and Skip Question buttons.
+4. Every source answer choice, when the source provides choices.
+5. Full correct answer text.
+6. A source difficulty label only when the question has a difficulty value.
+7. Correct, Incorrect, and Skip Question buttons.
 
-Bob reads the question to Alice, hears the answer, consults the visible answer, and presses Correct
-or Incorrect. The application does not attempt automatic answer matching.
+Bob reads the question and any choices to Alice, hears the answer, consults the visible correct
+answer, and presses Correct or Incorrect. The application does not attempt automatic answer
+matching.
 
 Correct fills the active player's wedge for the selected category if it is empty. A correct answer
 in a category already filled does not create a second wedge. Incorrect leaves the score unchanged.
@@ -171,13 +172,13 @@ ready until its longest question and answer have been checked at the minimum vie
 ## Current source inventory and first-bank decision
 
 The acquired source cache contains two general-trivia candidates with source categories and source
-difficulty. Neither has per-question age appropriateness.
+difficulty. The first release does not use any age field.
 
-| Source | Cached records | Source categories | Source difficulty | Content safety field | Age field | First-bank status |
-| --- | ---: | ---: | --- | --- | --- | --- |
-| The Trivia API, `contentFilter=family`, text-choice | 7,993 | 10 | easy, medium, hard | family-filtered acquisition | none | Review candidate |
-| Open Trivia DB full token harvest | 5,247 | 24 | easy, medium, hard | none | none | Not a first candidate |
-| OpenBookQA, ARC, QASC, CommonsenseQA | science or reasoning datasets | no usable broad category taxonomy | corpus-level only or none | none | none | Not a first general bank |
+| Source | Cached records | Source categories | Source difficulty | Content safety field | First-bank status |
+| --- | ---: | ---: | --- | --- | --- |
+| The Trivia API, `contentFilter=family`, text-choice | 7,993 | 10 | easy, medium, hard | family-filtered acquisition | Review candidate |
+| Open Trivia DB full token harvest | 5,247 | 24 | easy, medium, hard | none | Not a first candidate |
+| OpenBookQA, ARC, QASC, CommonsenseQA | science or reasoning datasets | no usable broad category taxonomy | corpus-level only or none | none | Not a first general bank |
 
 The Trivia API cache has these source-category counts: film and TV 1,094; society and culture
 1,012; science 1,005; geography 982; arts and literature 911; music 901; history 808; food and
@@ -186,16 +187,14 @@ drink 500; sport and leisure 452; and general knowledge 328. Its difficulty coun
 `isNiche: false`.
 
 Open Trivia DB is less suitable for the first pass despite its larger taxonomy. Its cache contains
-1,172 video-game questions, and it has no family-content filter, tags, or age field. Its
+1,172 video-game questions, and it has no family-content filter or tags. Its
 categories and difficulty are useful metadata, but the absence of a content-safety source filter
 creates a larger review queue.
 
 The first review sample should therefore come only from the cached, family-filtered The Trivia API
 records. It should retain the six selected source labels, source difficulty, tags, and upstream ID
-unchanged. It should not yet be marketed as Family or Adults, because that would claim age
-suitability that the source does not provide. Human review of a small sample establishes whether
-the questions are suitable enough to justify later age labeling; no LLM classification runs before
-that review.
+unchanged. It should not be marketed as Family or Adults. Age appropriateness is deferred to a
+future pass, and no LLM classification runs in the first release.
 
 ### Stratified source-quality screening
 
@@ -210,8 +209,9 @@ The screen found usable general-trivia coverage, but it also found reasons not t
 cache:
 
 - **Answer-choice-dependent wording.** 587 of 7,993 records use `Which of these` or `Which of the
-  following`. The planned reader view has a question and answer, not multiple-choice options, so
-  these records cannot appear unless the approved app design later adds visible choices.
+  following`. These are compatible with the approved design because the reader view will display
+  and read every source choice. The source's correct answer and incorrect answers must therefore
+  be retained, with their displayed order saved in game state before rendering.
 - **Text that cannot be assumed to fit.** 39 prompts exceed 160 characters; 15 exceed 200; and 6
   answers exceed 120. The longest prompt is 447 characters and the longest answer is 278. The
   phone layout must measure reviewed records at the target viewport and reject any record that
@@ -222,19 +222,18 @@ cache:
   (`622a1c3c7cc59eab6f95181e`), `Lewis Carrol` instead of `Lewis Carroll`
   (`622a1c3c7cc59eab6f951896`), and inconsistent capitalization and punctuation. A published bank
   needs record-level correction or rejection, with the upstream ID retained.
-- **Content and age are separate.** The family-filtered sample still includes Nazi persecution in
-  a *Schindler’s List* question (`62573efd9da29df7b05f7380`), nuclear-war plot material
-  (`62573fc99da29df7b05f73ac`), execution history, religion, and obscure professional knowledge.
-  No sexually explicit question appeared in this sample, but the source filter is not a substitute
-  for age or subject review.
+- **Content boundary.** The sample includes Nazi persecution in a *Schindler’s List* question
+  (`62573efd9da29df7b05f7380`), nuclear-war plot material (`62573fc99da29df7b05f73ac`), execution
+  history, religion, and obscure professional knowledge. These subjects may be included. No
+  sexually explicit question appeared in the sample, and sexually explicit questions are excluded.
 - **Difficulty is useful but imperfect.** An easy question asks for a botanical scientific name,
   while medium questions include school chemistry and an obscure invention term. The source level
-  should be displayed and retained, but it cannot establish age appropriateness by itself.
+  should be displayed and retained, but it does not settle whether a question belongs in the bank.
 
 The screening decision is: do not use raw records directly; do not create Family or Adult banks
 yet; and do not run LLM labeling. The next data step is a small human-reviewed export with six
-chosen source categories, only free-response-compatible wording, source difficulty retained,
-explicit age suitability, content approval, and a fit check at the minimum phone viewport.
+chosen source categories, source difficulty and all answer choices retained, sexually-explicit-
+content exclusion, and a fit check at the minimum phone viewport.
 
 ## Local data and JavaScript modules
 
@@ -266,22 +265,23 @@ Each question has this required shape:
   sourceCategory: "history",
   prompt: "...",
   answer: "...",
+  incorrectAnswers: ["...", "...", "..."], // optional, preserved from the source
   sourceDifficulty: "easy", // optional, preserved from the source
-  ageAppropriateness: { minAge: 8, maxAge: null }, // required for a playable bank
-  contentReview: "approved", // required; no sexually explicit question is eligible
+  contentReview: "no-sexual-content", // required; explicit sexual material is ineligible
   source: "curated-bank-name"
 }
 ```
 
-The app displays `sourceDifficulty` when it exists. The first version selects from the chosen bank
-and category; it does not infer a child's age from a name. A bank may be labeled Family or Adults
-only from both `sourceDifficulty` and reviewed `ageAppropriateness`. Adult means the expected
-knowledge suits older people; it never permits sexually explicit content.
+The app displays `sourceDifficulty` when it exists. It shows the source choices when they exist,
+in a saved randomized order that remains stable across refresh. The first version selects from the
+chosen bank and category. It does not infer, store, display, or filter age. Family and Adult bank
+labels are deferred to a later age-appropriateness pass. No future label permits sexually explicit
+content.
 
 The acquisition cache retains raw source data even when it lacks age metadata. A playable bank is
 a reviewed export from that cache. The bank validator rejects duplicate question identifiers,
-unknown source categories, absent prompts or answers, absent age appropriateness, missing content
-approval, and a bank that lacks at least one question in any of its six declared source categories.
+unknown source categories, absent prompts or answers, missing content approval, and a bank that
+lacks at least one question in any of its six declared source categories.
 A game that runs out of unused questions for the selected category displays a blocking error naming
 the bank and category. It does not choose a different category, repeat a question, or call an API.
 
@@ -317,7 +317,7 @@ condition and provides only a safe return to setup when that does not discard an
 - Storage write failure: show that the game cannot be saved; do not continue with a game that would
   lose turn state on refresh.
 - A question too large for the screen: show its identifier and stop before partial rendering.
-- A question missing reviewed age appropriateness or content approval: reject the bank before play.
+- A question missing content approval: reject the bank before play.
 
 ## Accessibility and interaction
 
@@ -334,8 +334,8 @@ The prototype is ready for review only after these checks pass:
 2. Tapping any person toggles only that person; Start rejects fewer than two selections.
 3. Start produces a permutation of the selected people and does not repeat an identifier.
 4. Every category button selects an unused question from its own category.
-5. The question view shows the complete prompt, complete answer, and source difficulty only when
-   present; it has no timer.
+5. The question view shows the complete prompt, every supplied answer choice, complete correct
+   answer, and source difficulty only when present; it has no timer.
 6. Correct fills only the active player’s first empty wedge for that category; Incorrect changes no
    wedge; summary advances to the next shuffled person.
 7. Skip replaces the question in the same category for the same player and never repeats a used
@@ -345,15 +345,13 @@ The prototype is ready for review only after these checks pass:
 10. Valid setup URL parameters populate setup; malformed parameters show errors.
 11. At 320 by 568 and 390 by 844, every state has no vertical or horizontal scroll and all required
     controls are reachable.
-12. Empty categories, invalid bank data, absent age or content review, exhausted categories,
-    storage failure, and oversized questions show their explicit errors instead of a replacement
-    behavior.
+12. Empty categories, invalid bank data, absent content review, exhausted categories, storage
+    failure, and oversized questions show their explicit errors instead of a replacement behavior.
 
 ## Decisions requested before implementation
 
 1. Which six existing source categories should the first reviewed bank use?
 2. Should a source label appear exactly as supplied, or is capitalization and underscore-to-space
    normalization acceptable?
-3. Which age bands should define Family and Adults after the first review pass?
-4. Should the first review sample contain one source-difficulty level or all source-difficulty
+3. Should the first review sample contain one source-difficulty level or all source-difficulty
    levels?
