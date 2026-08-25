@@ -1,0 +1,411 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,minimal-ui"
+    />
+    <title>Swellgarfo | Scattergories List Generator</title>
+    <meta name="description" content="Generate random scattergories lists" />
+    <meta
+      property="og:description"
+      content="Generate random scattergories lists"
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Scattergories List Generator" />
+    <meta
+      name="twitter:description"
+      content="Generate random scattergories lists"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="http://swellgarfo.com/scattergories" />
+    <meta property="og:title" content="Swellgarfo: Scattergories" />
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+    <meta name="theme-color" content="#12385a" />
+    <meta
+      name="keywords"
+      content="scattergories, categories, online games, games with friends, zoom"
+    />
+    <link rel="stylesheet" href="dist/style.css?v=1766658134907" />
+  </head>
+  <body>
+    <div class="svg-sprite">
+      <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+      <svg
+        width="1024"
+        height="536"
+        viewBox="0 0 1024 536"
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+      >
+        <svg
+          width="512"
+          height="512"
+          viewBox="0 0 512 512"
+          id="pause"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M224 435.8V76.1c0-6.7-5.4-12.1-12.2-12.1h-71.6c-6.8 0-12.2 5.4-12.2 12.1v359.7c0 6.7 5.4 12.2 12.2 12.2h71.6c6.8 0 12.2-5.4 12.2-12.2zM371.8 64h-71.6c-6.7 0-12.2 5.4-12.2 12.1v359.7c0 6.7 5.4 12.2 12.2 12.2h71.6c6.7 0 12.2-5.4 12.2-12.2V76.1c0-6.7-5.4-12.1-12.2-12.1z"
+          /></svg
+        ><svg
+          width="512"
+          height="512"
+          viewBox="0 0 512 512"
+          id="play"
+          x="512"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M405.2 232.9L126.8 67.2c-3.4-2-6.9-3.2-10.9-3.2-10.9 0-19.8 9-19.8 20H96v344h.1c0 11 8.9 20 19.8 20 4.1 0 7.5-1.4 11.2-3.4l278.1-165.5c6.6-5.5 10.8-13.8 10.8-23.1s-4.2-17.5-10.8-23.1z"
+          /></svg
+        ><svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="cfeather cfeather-refresh-cw"
+          id="refresh-cw"
+          y="512"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M23 4v6h-6M1 20v-6h6" />
+          <path
+            d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
+          />
+        </svg>
+      </svg>
+    </div>
+    <div id="view">
+      <div class="bottom-links s6">
+        <h1 class="bottom-link clickable">
+          <a href="https://swellgarfo.com/scattergories"
+            ><b>Scattergories List Generator</b></a
+          >
+        </h1>
+        <div class="bottom-link clickable" @click="toggleAboutModal()">
+          About
+        </div>
+        <div class="bottom-link clickable rbw">
+          <a href="https://really.boring.website" target="_blank"
+            ><span>Play This Game Online</span></a
+          >
+        </div>
+        <div class="bottom-right">
+          <div class="bottom-right-inner">
+            <button
+              class="clickable bottom-button"
+              type="button"
+              @click="invertColors"
+            >
+              <div class="half-moon" :class="{'inverted': isInverted}">
+                <div class="half-moon-inner">
+                  <div class="half-moon-inner-inner"></div>
+                </div>
+              </div>
+            </button>
+            <button
+              class="clickable bottom-button"
+              type="button"
+              @click="changePrimaryColor"
+            >
+              Change Colors
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="frame">
+        <div class="game-wrap" :class="this.gameState">
+          <div class="animation-overlay"></div>
+          <div class="about-modal">
+            <div class="about-modal-close-wrap">
+              <button class="close clickable" @click="toggleAboutModal()">
+                <div class="close-inner">Close</div>
+              </button>
+            </div>
+            <div class="about-modal-content">
+              <div class="content-p">
+                Made by
+                <a href="https://swellgarfo.com" target="_blank">Swellgarfo</a>.
+              </div>
+              <br />
+              <div class="content-p">
+                Please to
+                <a
+                  href="/cdn-cgi/l/email-protection#a7d0c2c9c3dec0c6d5c1c8e7c0cac6cecb89c4c8ca"
+                  >email me</a
+                >
+                if you have questions or suggestions.
+              </div>
+              <br />
+              <div class="content-p">
+                <form
+                  action="https://www.paypal.com/cgi-bin/webscr"
+                  method="post"
+                  target="_top"
+                >
+                  <input type="hidden" name="cmd" value="_s-xclick" />
+                  <input
+                    type="hidden"
+                    name="encrypted"
+                    value="-----BEGIN PKCS7-----MIIHRwYJKoZIhvcNAQcEoIIHODCCBzQCAQExggEwMIIBLAIBADCBlDCBjjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRQwEgYDVQQKEwtQYXlQYWwgSW5jLjETMBEGA1UECxQKbGl2ZV9jZXJ0czERMA8GA1UEAxQIbGl2ZV9hcGkxHDAaBgkqhkiG9w0BCQEWDXJlQHBheXBhbC5jb20CAQAwDQYJKoZIhvcNAQEBBQAEgYBymGZ9h6ih+2GhRi824qtN1s82D1ZjpI6dxn/AIsbCQ/XTKEnmt/4OlXkrt3L3YsY49RHNh02mdHdLCXt6zgHsJZ+SH/b8yUgFgTcMY5cOWCKtctKnFo64DnEEZzVMc8p6/OILcmvceAPp0c9z/9frUDwlaAFRuheHTSUMmz8gjTELMAkGBSsOAwIaBQAwgcQGCSqGSIb3DQEHATAUBggqhkiG9w0DBwQIfYyOPUqjRVaAgaDDCJOEpxMhwdv+9l21etYiFqDB7bC2wMds/RDYVFIqIeQ8yY+FOyYUdQHvwHMx11dCDB+b7Tolv64O5NrcwBaKn4hhuvVMLgMDlsIAVa0EDw82DyAIrlg8mOhRkHAcjlcawW5oEChHGTPx+r3QcBT5D6pcyRbfcG1BhsON5jgc1FHufZxQTtZBv6+1jeUmbdkyJJFJ9OXPC5lgVhYuZcQvoIIDhzCCA4MwggLsoAMCAQICAQAwDQYJKoZIhvcNAQEFBQAwgY4xCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDQTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEUMBIGA1UEChMLUGF5UGFsIEluYy4xEzARBgNVBAsUCmxpdmVfY2VydHMxETAPBgNVBAMUCGxpdmVfYXBpMRwwGgYJKoZIhvcNAQkBFg1yZUBwYXlwYWwuY29tMB4XDTA0MDIxMzEwMTMxNVoXDTM1MDIxMzEwMTMxNVowgY4xCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDQTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEUMBIGA1UEChMLUGF5UGFsIEluYy4xEzARBgNVBAsUCmxpdmVfY2VydHMxETAPBgNVBAMUCGxpdmVfYXBpMRwwGgYJKoZIhvcNAQkBFg1yZUBwYXlwYWwuY29tMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDBR07d/ETMS1ycjtkpkvjXZe9k+6CieLuLsPumsJ7QC1odNz3sJiCbs2wC0nLE0uLGaEtXynIgRqIddYCHx88pb5HTXv4SZeuv0Rqq4+axW9PLAAATU8w04qqjaSXgbGLP3NmohqM6bV9kZZwZLR/klDaQGo1u9uDb9lr4Yn+rBQIDAQABo4HuMIHrMB0GA1UdDgQWBBSWn3y7xm8XvVk/UtcKG+wQ1mSUazCBuwYDVR0jBIGzMIGwgBSWn3y7xm8XvVk/UtcKG+wQ1mSUa6GBlKSBkTCBjjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRQwEgYDVQQKEwtQYXlQYWwgSW5jLjETMBEGA1UECxQKbGl2ZV9jZXJ0czERMA8GA1UEAxQIbGl2ZV9hcGkxHDAaBgkqhkiG9w0BCQEWDXJlQHBheXBhbC5jb22CAQAwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOBgQCBXzpWmoBa5e9fo6ujionW1hUhPkOBakTr3YCDjbYfvJEiv/2P+IobhOGJr85+XHhN0v4gUkEDI8r2/rNk1m0GA8HKddvTjyGw/XqXa+LSTlDYkqI8OwR8GEYj4efEtcRpRYBxV8KxAW93YDWzFGvruKnnLbDAF6VR5w/cCMn5hzGCAZowggGWAgEBMIGUMIGOMQswCQYDVQQGEwJVUzELMAkGA1UECBMCQ0ExFjAUBgNVBAcTDU1vdW50YWluIFZpZXcxFDASBgNVBAoTC1BheVBhbCBJbmMuMRMwEQYDVQQLFApsaXZlX2NlcnRzMREwDwYDVQQDFAhsaXZlX2FwaTEcMBoGCSqGSIb3DQEJARYNcmVAcGF5cGFsLmNvbQIBADAJBgUrDgMCGgUAoF0wGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTgwMTE0MTUzMjUzWjAjBgkqhkiG9w0BCQQxFgQU9fSptAEE4AjwgRXqsykkK/ZZ9VcwDQYJKoZIhvcNAQEBBQAEgYAXbgNdXzRhiJ4ElLYit7UJswouje+xifcjcfpanUFqR0thZoU3Bnj+Eme1ei/HzhVUYoROqUsoUCdW8fZy/hvjWWwV/xYCmstd26yCIerFoCdHRrMnoeryymrN2CMOh8X/UQvwJcyT0Vd8w+YPsyt45tuMo8EXEKebc44O81wBNg==-----END PKCS7-----
+        "
+                  />
+                  <div class="">
+                    Also, if you really enjoy this, maybe you can
+                    <button class="clickable" type="submit">
+                      buy me a coffee</button
+                    >.
+                  </div>
+                  <img
+                    alt=""
+                    border="0"
+                    src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif"
+                    width="1"
+                    height="1"
+                  />
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="game">
+            <div class="left-wrap">
+              <div class="letter-wrap">
+                <div class="label">Letter</div>
+                <div class="label-right" v-if="gameState !== IN_GAME">
+                  <button @click="getLetter()">Re-roll</button>
+                </div>
+                <div class="letter s4"><span>{{ currentLetter }}</span></div>
+              </div>
+              <div class="game-info-wrap">
+                <div class="time-wrap">
+                  <div class="label">Time</div>
+                  <div class="label-right">
+                    <button @click="editTime()">Change</button>
+                  </div>
+                  <div class="time" v-if="!state.editingTime">
+                    {{ currentTime }}
+                  </div>
+                  <div class="time" v-if="state.editingTime">
+                    <form method="POST" @submit.prevent="submitUpdateTime()">
+                      <input
+                        type="number"
+                        pattern="\d*"
+                        v-model="currentTime"
+                        id="time-input"
+                      /><button type="submit">Update</button>
+                    </form>
+                  </div>
+                </div>
+                <div class="controls-wrap">
+                  <div class="label">
+                    <div class="label-inner">{{ playLabel }}</div>
+                  </div>
+                  <div class="controls">
+                    <button
+                      v-if="gameState !== GAME_OVER"
+                      name="button"
+                      @click="(gameState === IN_GAME ? pauseGame: startGame)()"
+                    >
+                      <div class="button-outer animate-svg-path">
+                        <svg width="32px" height="32px" viewBox="6 6 24 24">
+                          <path
+                            d="M11,10 L18,13.74 18,22.28 11,26 M18,13.74 L26,18 26,18 18,22.28"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                    <button
+                      v-if="gameState === GAME_OVER"
+                      name="button"
+                      @click="resetGame()"
+                      class="button-play-again"
+                    >
+                      <svg viewbox="0 512 24 24">
+                        &nbsp;
+                        <use xlink:href="#refresh-cw" />
+                        &nbsp;
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="words">
+              <div class="label categories-main-label">
+                <button class="clickable-label" @click="editWordlist">
+                  Categories</button
+                ><button @click="startAdding()">
+                  Add <span v-if="!customCategories.length">A Category</span>
+                  <span v-if="customCategories.length"
+                    >({{ customCategories.length }} custom<span
+                      v-if="!hasRemovedAll"
+                    >
+                      / {{ wordlist.length }}</span
+                    >)</span
+                  >
+                </button>
+              </div>
+              <div class="label-right">
+                <button @click="numberOfWords -= 1">-</button> {{ numberOfWords
+                }} <button @click="numberOfWords += 1">+</button>
+              </div>
+              <div class="words-wrap" :class="{'adding': state.adding}">
+                <div class="add-category-wrap">
+                  <form @submit.prevent="submitNewCategory()">
+                    <input
+                      type="text"
+                      id="new-category-input"
+                      autocomplete="off"
+                      autocorrect="off"
+                      spellcheck="false"
+                      placeholder="Enter a new category..."
+                    />
+                    <button type="submit">+</button>
+                  </form>
+                </div>
+                <div v-if="state.editingLists">
+                  <div class="edit-lists-title">
+                    Each turn, {{ numberOfWords }} categorie{{ numberOfWords - 1
+                    ? "s" : "" }} are chosen randomly from the list&nbsp;below:
+                  </div>
+                  <div class="wordlist-word wordlist-controls">
+                    <button @click="makeKidFriendly()">
+                      Make Child-Friendly
+                    </button>
+                    <button class="remove-all-button" @click="removeAll()">
+                      Remove All
+                    </button>
+                  </div>
+                  <transition-group name="list" tag="div"
+                    ><div
+                      class="wordlist-word"
+                      v-for="(word, index) in wordlist"
+                      v-if="wordlist.length"
+                      :key="word.category"
+                    >
+                      <div :class="{'custom-word': word.isCustom}">
+                        {{ word.category }}<span
+                          v-if="word.isCustom"
+                          style="opacity: 0.6"
+                        >
+                          ★</span
+                        >
+                      </div>
+                      <button class="remove-button" @click="removeWord(index)">
+                        Remove
+                      </button>
+                    </div></transition-group
+                  >
+                  <div
+                    class="wordlist-word empty-message"
+                    v-if="!wordlist.length"
+                  >
+                    No Categories.
+                    <button class="empty-button" @click="startAdding(true)">
+                      Add A New Category
+                    </button>
+                  </div>
+                </div>
+                <div class="words-scroller" v-if="!state.editingLists">
+                  <div
+                    class="word-wrap"
+                    v-if="currentWords.length"
+                    v-for="(word, index) in currentWords"
+                  >
+                    <div class="number">{{ index + 1 }}</div>
+                    <div
+                      class="word s6"
+                      :style="{'transition-delay': index * 30 + 'ms' }"
+                    >
+                      <span>{{ word.category }}</span>
+                    </div>
+                  </div>
+                  <div v-if="!currentWords.length" class="empty-message">
+                    <br />You've removed all the categories.<br /><button
+                      class="empty-button"
+                      style="color: black"
+                      @click="startAdding(true)"
+                    >
+                      Add A Category
+                    </button>
+                    and restart.<br />
+                  </div>
+                </div>
+              </div>
+              <transition name="slide-in"
+                ><div
+                  v-if="!state.wordlistPristine && wordlist.length && state.editingLists"
+                  class="save-button-wrap"
+                >
+                  <button @click="saveList()" class="save-button">
+                    {{ state.isSaving ? "Saving" : "Save List" }}
+                  </button>
+                </div>
+                <div
+                  v-if="state.wordlistPristine && wordlist.length && state.editingLists && listHash"
+                  class="save-button-wrap"
+                >
+                  <button class="url-button" @click="copyUrl">
+                    <span>List URL:</span>
+                    <span class="url"
+                      >swellgarfo.com/scattergories/#{{listHash}}</span
+                    >
+                  </button>
+                </div></transition
+              >
+            </div>
+          </div>
+          <div class="button-wrap">
+            <button @click="resetGame()" class="reset-button clickable">
+              <div class="reset-button-inner">
+                <div class="refresh-icon-wrap">
+                  <svg viewbox="0 512 24 24">
+                    &nbsp;
+                    <use xlink:href="#refresh-cw" />
+                    &nbsp;
+                  </svg>
+                </div>
+                <div class="animated-letters">
+                  <div class="animated-letter">R</div>
+                  <div class="animated-letter">e</div>
+                  <div class="animated-letter">s</div>
+                  <div class="animated-letter">t</div>
+                  <div class="animated-letter">a</div>
+                  <div class="animated-letter">r</div>
+                  <div class="animated-letter">t</div>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script
+      data-cfasync="false"
+      src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"
+    ></script>
+    <script src="fixed-packs.js?v=20260823-6"></script>
+    <script src="dist/bundle.js?v=20260824-1" charset="utf-8"></script>
+    <script src="fixed-pack-library.js?v=20260823-2"></script>
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-9XPVC4ZRP1"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "G-9XPVC4ZRP1");
+    </script>
+  </body>
+</html>
