@@ -53566,7 +53566,7 @@
         return { category: category, isCustom: !1, isAdult: !1 };
       });
     }),
-      D = 0;
+      D = Math.floor(Math.random() * window.PHOTOSITE_FIXED_PACKS.length);
     function M(t, e) {
       var r = Object.keys(t);
       if (Object.getOwnPropertySymbols) {
