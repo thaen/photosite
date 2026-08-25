@@ -29,6 +29,12 @@ from exif import Image
 from jinja2 import Environment, FileSystemLoader
 jenv = Environment(loader=FileSystemLoader('templates'))
 
+# A release build may request a list of successfully rebuilt site targets. Normal
+# builds retain doit's standard console reporter.
+if os.environ.get('PHOTOSITE_UPLOAD_LIST'):
+    from scripts.release_reporter import UploadListReporter
+    DOIT_CONFIG = {'reporter': UploadListReporter}
+
 ORDERFILE_LOCATION = "orderfiles"
 
 def _mkdir(targets):
