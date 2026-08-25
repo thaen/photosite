@@ -1,0 +1,62 @@
+/* Raster artwork owns visible player and category labels. */
+:root { --night: #0a0c20; --paper: #fff7dc; --ink: #101426; }
+html, body, #app, #app[data-screen="question"], #app[data-screen="summary"] {
+  background: var(--night) !important;
+  color: var(--paper);
+}
+main { background: var(--night); }
+h1, h2, p { color: var(--paper); }
+.card, .score { background: #171a35; border-color: var(--paper); box-shadow: 4px 4px 0 #000; }
+.person { min-height: 205px; background-color: transparent !important; }
+.person > button, .person > button.selected {
+  color: transparent !important;
+  font-size: 0 !important;
+  text-shadow: none !important;
+}
+.person > button .player-name { display: inline; font-size: 0; }
+.person.off { opacity: .38; filter: grayscale(1); }
+.person.player-nora { background-image: url("assets/name-nora.webp?v=20260825-13") !important; }
+.person.player-claire { background-image: url("assets/name-claire.webp?v=20260825-13") !important; }
+.person.player-cori { background-image: url("assets/name-cori.webp?v=20260825-13") !important; }
+.person.player-ethan { background-image: url("assets/name-ethan.webp?v=20260825-13") !important; }
+.difficulties { bottom: 8%; }
+.difficulties button { color: var(--ink) !important; text-shadow: 1px 1px 0 var(--paper); }
+.category-label {
+  color: transparent !important;
+  font-size: 0 !important;
+  text-shadow: none !important;
+  min-height: 172px;
+  padding: 0 !important;
+}
+.category-label:disabled { filter: grayscale(1); opacity: .32 !important; }
+.category-label.category-0 { background-image: url("assets/category-0.webp?v=20260825-13") !important; }
+.category-label.category-1 { background-image: url("assets/category-1.webp?v=20260825-13") !important; }
+.category-label.category-2 { background-image: url("assets/category-2.webp?v=20260825-13") !important; }
+.category-label.category-3 { background-image: url("assets/category-3.webp?v=20260825-13") !important; }
+.category-label.category-4 { background-image: url("assets/category-4.webp?v=20260825-13") !important; }
+.category-label.category-5 { background-image: url("assets/category-5.webp?v=20260825-13") !important; }
+.pie {
+  position: relative;
+  background-image: conic-gradient(var(--c0) 0 60deg,var(--c1) 60deg 120deg,var(--c2) 120deg 180deg,var(--c3) 180deg 240deg,var(--c4) 240deg 300deg,var(--c5) 300deg 360deg) !important;
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.pie::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: url("assets/pie-comic.webp?v=20260825-13") center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+.correct, .result-correct { background-image: url("assets/correct-burst.webp?v=20260825-13") !important; }
+.incorrect, .result-incorrect { background-image: url("assets/incorrect-burst.webp?v=20260825-13") !important; }
+.new-game { background-image: url("assets/new-game.webp?v=20260825-13") !important; }
+.next-turn { background-image: url("assets/next-turn.webp?v=20260825-13") !important; }
+.correct, .incorrect, .result-icon, .new-game, .next-turn { background-color: transparent !important; }
+.correct, .incorrect { min-height: 132px; }
+.new-game { width: 76px !important; height: 76px !important; }
+.next-turn { width: 176px !important; height: 176px !important; }
+.result-icon { width: 176px !important; height: 176px !important; min-height: 176px !important; }
+.question-card, .summary { background: transparent; }
