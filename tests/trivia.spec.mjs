@@ -37,6 +37,19 @@ test('correct reaches the summary and hands off to the next player', async ({ pa
   await expect(page.getByRole('button', { name: /Pass the phone to/ })).toBeVisible();
 });
 
+test('the summary reflects scoring on later turns', async ({ page }) => {
+  await page.getByRole('button', { name: 'Start Game' }).click();
+  await page.getByRole('button', { name: 'History' }).click();
+  await page.getByRole('button', { name: 'Correct', exact: true }).click();
+  await expect(page.locator('.score').filter({ hasText: ': 1/6' })).toHaveCount(1);
+  await expect(page.locator('.pie').evaluateAll(pies => pies.some(pie => pie.style.getPropertyValue('--c3') === '#b66b27'))).resolves.toBeTruthy();
+  await page.getByRole('button', { name: /Pass the phone to/ }).click();
+  await page.getByRole('button', { name: 'Science' }).click();
+  await page.getByRole('button', { name: 'Correct', exact: true }).click();
+  await expect(page.locator('.score').filter({ hasText: ': 1/6' })).toHaveCount(2);
+  await expect(page.locator('.pie').evaluateAll(pies => pies.some(pie => pie.style.getPropertyValue('--c4') === '#6b52a3'))).resolves.toBeTruthy();
+});
+
 test('phone viewport has no document scrolling in setup and question screens', async ({ page }) => {
   await expect(page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight)).resolves.toBeTruthy();
   await page.getByRole('button', { name: 'Start Game' }).click();
