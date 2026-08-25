@@ -11,6 +11,7 @@ test.beforeEach(async ({ page }) => {
 
 test('setup has the required defaults and Claire lacks Hard', async ({ page }) => {
   await expect(page.getByRole('heading', { name: "Who's playing?" })).toBeVisible();
+  await expect(page.locator('.person .player-name')).toHaveCount(4);
   await expect(page.getByRole('button', { name: 'Hard' }).nth(0)).toBeVisible();
   const claire = page.locator('.person', { has: page.getByRole('button', { name: 'Claire', exact: true }) });
   await expect(claire.getByRole('button', { name: 'Hard' })).not.toHaveClass(/selected/);
