@@ -45,7 +45,7 @@ test('correct reaches the summary and hands off to the next player', async ({ pa
   await page.getByRole('button', { name: 'Start Game' }).click();
   await page.getByRole('button', { name: 'History' }).click();
   await page.getByRole('button', { name: 'Correct', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Correct!' })).toBeVisible();
+  await expect(page.locator('.result-correct')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Next turn' })).toBeVisible();
 });
 
