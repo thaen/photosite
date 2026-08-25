@@ -19,6 +19,7 @@ test('setup has the required defaults and Claire lacks Hard', async ({ page }) =
 
 test('difficulty selection controls question eligibility and answer visibility persists', async ({ page }) => {
   await page.getByRole('button', { name: 'Start Game' }).click();
+  await expect(page.locator('.category-label')).toHaveCount(6);
   await page.getByRole('button', { name: 'Science' }).click();
   await expect(page.getByText(/^Difficulty:/)).toBeVisible();
   await expect(page.locator('.category-heading')).toBeVisible();
