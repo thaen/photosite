@@ -21,6 +21,7 @@ test('difficulty selection controls question eligibility and answer visibility p
   await page.getByRole('button', { name: 'Start Game' }).click();
   await page.getByRole('button', { name: 'Science' }).click();
   await expect(page.getByText(/^Difficulty:/)).toBeVisible();
+  await expect(page.locator('.category-heading')).toBeVisible();
   await page.getByRole('button', { name: 'Hide Answer' }).click();
   await expect(page.getByRole('button', { name: 'Show Answer' })).toBeVisible();
   await page.reload();
