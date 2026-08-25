@@ -197,6 +197,45 @@ suitability that the source does not provide. Human review of a small sample est
 the questions are suitable enough to justify later age labeling; no LLM classification runs before
 that review.
 
+### Stratified source-quality screening
+
+The reproducible sample is at
+`~/photosite-trivia-sources/work/trivia-api-review-sample-2026-08-25.json`. The selection script
+is `~/photosite-trivia-sources/scripts/make_review_sample.py`. It selected three records from each
+of six candidate source categories and each source difficulty, for 54 records total. Within every
+category/difficulty stratum, it chooses the records with the lowest SHA-256 hash of upstream ID;
+the selection is therefore stable and does not depend on a model.
+
+The screen found usable general-trivia coverage, but it also found reasons not to bundle the raw
+cache:
+
+- **Answer-choice-dependent wording.** 587 of 7,993 records use `Which of these` or `Which of the
+  following`. The planned reader view has a question and answer, not multiple-choice options, so
+  these records cannot appear unless the approved app design later adds visible choices.
+- **Text that cannot be assumed to fit.** 39 prompts exceed 160 characters; 15 exceed 200; and 6
+  answers exceed 120. The longest prompt is 447 characters and the longest answer is 278. The
+  phone layout must measure reviewed records at the target viewport and reject any record that
+  cannot fit without scrolling. It must not shorten these fields.
+- **Source accuracy and editing defects.** The sample contains an incorrect nursery-rhyme label
+  (`63a0399ac7d86251f9b65c8d`), a question that needs answer choices
+  (`63989c285c9a75021f310486`), `Whitehouse` instead of `White House`
+  (`622a1c3c7cc59eab6f95181e`), `Lewis Carrol` instead of `Lewis Carroll`
+  (`622a1c3c7cc59eab6f951896`), and inconsistent capitalization and punctuation. A published bank
+  needs record-level correction or rejection, with the upstream ID retained.
+- **Content and age are separate.** The family-filtered sample still includes Nazi persecution in
+  a *Schindler’s List* question (`62573efd9da29df7b05f7380`), nuclear-war plot material
+  (`62573fc99da29df7b05f73ac`), execution history, religion, and obscure professional knowledge.
+  No sexually explicit question appeared in this sample, but the source filter is not a substitute
+  for age or subject review.
+- **Difficulty is useful but imperfect.** An easy question asks for a botanical scientific name,
+  while medium questions include school chemistry and an obscure invention term. The source level
+  should be displayed and retained, but it cannot establish age appropriateness by itself.
+
+The screening decision is: do not use raw records directly; do not create Family or Adult banks
+yet; and do not run LLM labeling. The next data step is a small human-reviewed export with six
+chosen source categories, only free-response-compatible wording, source difficulty retained,
+explicit age suitability, content approval, and a fit check at the minimum phone viewport.
+
 ## Local data and JavaScript modules
 
 The application is static. Questions live in JavaScript modules shipped with the page. It never
