@@ -5,4 +5,21 @@ __pycache__
 *.jpg
 *.pdf
 content/*
+# content/static holds two very different things: the site's code and
+# hand-made assets, and multi-gigabyte media (zips up to 1.2G, ripped
+# tapes). Track the code by extension so a new source file is committed
+# without needing `git add -f`, and leave the media out.
+!content/static/
+content/static/**
+!content/static/**/
+!content/static/**/*.html
+!content/static/**/*.js
+!content/static/**/*.css
+!content/static/**/*.json
+!content/static/**/*.py
+!content/static/**/*.md
+!content/static/**/*.svg
+!content/static/**/*.txt
+!content/static/**/*.webp
+!content/static/**/LICENSE
 .DS_Store

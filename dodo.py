@@ -226,6 +226,50 @@ def make_music_html():
     with open ("site/music.html", "w") as fh:
         fh.write(template.render(songs = songlist))
 
+TRIVIA_DIR = 'content/static/trivia'
+TRIVIA_ASSETS = os.path.join(TRIVIA_DIR, 'assets')
+TRIVIA_BANK_SOURCE = os.path.join(
+    'trivia-sources', 'the-trivia-api-family-text-choice.json')
+
+def task_trivia_bank():
+    '''
+    Build the served trivia question bank from the cached API response,
+    merging the API categories down to the six the game plays.
+    '''
+    yield {
+        'name': 'bank.js',
+        'file_dep': ['scripts/build_trivia_bank.py', TRIVIA_BANK_SOURCE],
+        'targets': [os.path.join(TRIVIA_DIR, 'bank.js')],
+        'actions': ['{} scripts/build_trivia_bank.py'.format(sys.executable)],
+    }
+
+def task_trivia_artwork():
+    '''
+    Measure the trivia comic artwork and emit the stylesheet that carries
+    each frame's image, safe area and colour. Needs Pillow.
+    '''
+    assets = sorted(glob(os.path.join(TRIVIA_ASSETS, '*.webp')))
+    yield {
+        'name': 'artwork.css',
+        'file_dep': ['scripts/trivia_artwork.py'] + assets,
+        'targets': [os.path.join(TRIVIA_DIR, 'artwork.css')],
+        'actions': ['{} scripts/trivia_artwork.py'.format(sys.executable)],
+    }
+
+def task_trivia():
+    '''
+    Everything generated into content/static/ before it gets copied out.
+    '''
+    yield {
+        'name': 'generated',
+        'actions': None,
+        'task_dep': ['trivia_bank', 'trivia_artwork'],
+    }
+
+# task_static walks content/static/ to build its file list, so it has to be
+# created after anything that generates files in there has run -- otherwise
+# a first build copies whatever existed before the generators wrote.
+@create_after(executed='trivia')
 def task_static():
     '''
     Copy all files from ./static to ./site/static/. Parallelizes with doit -n 8.

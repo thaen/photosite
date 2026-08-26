@@ -1,1 +1,401 @@
-:root{font:17px/1.25 system-ui,sans-serif;color:#10233b;background:#f6f2e9}*{box-sizing:border-box}html,body,#app{margin:0;width:100%;height:100%;overflow:hidden}main{padding:clamp(16px,4.5vw,28px);display:flex;flex-direction:column;gap:clamp(12px,2.5dvh,20px);height:100dvh}h1,h2,p{margin:0}h1{font-size:clamp(32px,10vw,48px);line-height:.95}h2{font-size:clamp(22px,6.5vw,31px)}button{font:inherit;font-weight:800;border:0;border-radius:16px;min-height:48px;padding:12px 14px;background:#e0e7ee;color:#10233b}button:focus-visible{outline:3px solid #10233b;outline-offset:2px}button.selected,.primary{background:#173f67;color:#fff}.people{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,minmax(106px,1fr));gap:12px;flex:1}.person{padding:12px;border:3px solid #d2dae4;border-radius:18px;display:flex;flex-direction:column;justify-content:space-between}.person>button{font-size:21px;text-align:left}.person.off{opacity:.48}.difficulties{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.difficulties button{min-height:38px;padding:5px 2px;font-size:13px}.error{color:#9a1919;font-weight:700}.push{margin-top:auto;min-height:62px;font-size:21px}.categories{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(3,1fr);gap:12px;flex:1}.category{color:#fff;min-height:0;font-size:20px;line-height:1.08}.card{background:#fff;border-radius:20px;padding:18px;box-shadow:0 3px 16px #10233b1f}.question{font-size:clamp(21px,6.4vw,31px);font-weight:800}.choices{margin:12px 0;padding-left:25px;font-size:17px}.answer{font-size:19px;background:#edf5ec;padding:12px;border-radius:12px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions .wide{grid-column:span 2}.correct{background:#1e7444;color:#fff}.incorrect{background:#9e3030;color:#fff}.skip{background:#73599a;color:#fff}.pie{width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--c0) 0 60deg,var(--c1) 60deg 120deg,var(--c2) 120deg 180deg,var(--c3) 180deg 240deg,var(--c4) 240deg 300deg,var(--c5) 300deg 360deg);border:3px solid #10233b}.score{display:flex;gap:14px;align-items:center;padding:8px 0;font-size:20px}.small{font-size:15px;color:#4a5868}.hidden{visibility:hidden}
+/*
+ * Trivia.
+ *
+ * Live HTML text is drawn on top of hand-drawn comic frames.  Getting that
+ * to hold together on a phone rests on one rule, in the "comic frames"
+ * section below: an element painted with artwork is given that artwork's
+ * aspect ratio.  Once the box and the image are the same shape, a
+ * percentage inset on the box is a percentage of the image, at every
+ * screen size, and the per-frame insets measured by
+ * scripts/trivia_artwork.py land where they were measured.
+ *
+ * The corollary is that text on artwork must be sized in container units
+ * (cqw), never vw.  A frame is sized by its grid track; the viewport is
+ * only loosely related to that once main's padding clamps.  Sizing the
+ * frame one way and its text the other is what made these screens line up
+ * on a desktop and drift on a phone.
+ */
+
+/* ---------------------------------------------------------------- tokens */
+
+:root {
+  --ink: #12283d;
+  --paper: #fffdf6;
+  --pink: #ff4f81;
+  --sun: #ffcf4a;
+  --grey: #dce2e7;
+  /* An unearned wedge, muted to sit quietly on the cream page. */
+  --pie-empty: #e2dac6;
+
+  --display: "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --edge: 3px solid var(--ink);
+  --pop: 4px 4px 0 var(--ink);
+  --round: 16px;
+  --pad: clamp(16px, 4.5vw, 28px);
+  /* Width to keep clear of the fixed New Game button. */
+  --chrome: 84px;
+
+  font: 17px/1.25 system-ui, sans-serif;
+  color: var(--ink);
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; height: 100%; }
+
+/* --page comes from artwork.css: the colour the art is drawn on, so the
+   page and the margins of the tiles are one continuous field. */
+body { background: var(--page); }
+
+/* ---------------------------------------------------------------- shell */
+
+/* #app is the <main> element; there is only one box here, not two. */
+#app {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2.5dvh, 20px);
+  min-height: 100dvh;
+  padding: var(--pad);
+  background: var(--page);
+}
+
+/* Keep the first line clear of the fixed New Game button. */
+#app > .small:first-child { padding-right: var(--chrome); }
+
+h1, h2, p { margin: 0; }
+h1 { font-family: var(--display); font-size: clamp(32px, 10vw, 48px); line-height: .95; }
+h2 { font-family: var(--display); font-size: clamp(22px, 6.5vw, 31px); }
+
+.small { font-size: 15px; color: #4a5868; }
+.error { color: #9a1919; font-weight: 700; }
+.hidden { visibility: hidden; }
+
+button {
+  font: inherit;
+  font-weight: 800;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: var(--edge);
+  border-radius: var(--round);
+  box-shadow: var(--pop);
+  background: #e0e7ee;
+  color: var(--ink);
+}
+
+button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+button:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
+
+.primary { background: var(--pink); }
+.push { margin-top: auto; min-height: 62px; font-size: 21px; }
+
+/* --------------------------------------------------------- comic frames */
+
+/*
+ * Everything drawn on artwork.  artwork.css supplies --frame and, for the
+ * frames that carry text, --frame-ratio and the --safe-* insets.
+ *
+ * aspect-ratio is the load-bearing line.  With the box locked to the
+ * artwork's shape, `100% 100%` is identical to `contain`: nothing is
+ * stretched and nothing is letterboxed, so there is no gap between where
+ * the image is and where the insets say it is.
+ */
+.person > button,
+.category-label,
+.correct,
+.incorrect,
+.result-icon,
+.new-game,
+.next-turn {
+  aspect-ratio: var(--frame-ratio);
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background:
+    var(--frame)
+    var(--frame-pos) / var(--frame-size)
+    no-repeat;
+}
+
+/* ---------------------------------------------------------- setup screen */
+
+.people {
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-items: start;
+  gap: 12px;
+}
+
+/* The plate is the name button; .person is only a stack. */
+.person {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.person.off { filter: grayscale(.65); opacity: .55; }
+
+.person > button {
+  display: grid;
+  place-items: center;
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+  font-family: var(--display);
+  /* Type is scaled by the frame's own interior width (see artwork.css),
+     so a tight bubble sets smaller text instead of spilling out of it. */
+  font-size: calc(var(--safe-w) * 15cqw);
+  line-height: .9;
+}
+
+/*
+ * The difficulty row sits under the plate rather than inside it.  Three
+ * words will not fit across a speech bubble at any size a thumb can hit --
+ * inside the art they came out under 30px tall and still overran the
+ * bubble on every phone tested.
+ */
+.difficulties {
+  display: grid;
+  /* Stacked by default: three words will not fit across half of a 320px
+     screen at any size a thumb can hit.  minmax(0,...) so a long label can
+     never push the column wider than its share. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+}
+
+/* Enough room for "MEDIUM" at 12px plus its border in a third of a
+   column, which is where a single row starts to fit. */
+@container (min-width: 346px) {
+  .difficulties { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.difficulties button {
+  min-height: 36px;
+  padding: 4px 2px;
+  border-width: 2px;
+  border-radius: 9px;
+  box-shadow: 2px 2px 0 var(--ink);
+  background: var(--paper);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.difficulties button.selected { background: var(--sun); }
+.difficulties button:not(.selected) { opacity: .45; }
+
+/* ------------------------------------------------------- category screen */
+
+.categories {
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-items: start;
+  /* The tiles are untrimmed squares whose margins are the page colour, so
+     butting them together makes one sheet.  Any gap or page padding would
+     show as a seam. */
+  gap: 0;
+  margin-inline: calc(-1 * var(--pad));
+}
+
+/*
+ * Percentage padding resolves against the element's *width* on all four
+ * sides -- that is the CSS rule that made the previous vertical insets
+ * wrong.  It is correct here only because the box is square, so width and
+ * height are the same number.
+ */
+.category-label {
+  display: grid;
+  place-items: center;
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+  font-family: var(--display);
+  /* Sized to the frame.  A name too long to fit on one line breaks at the
+     zero-width space app.js puts in it rather than shrinking the type. */
+  font-size: calc(var(--safe-w) * 7.4cqw);
+  font-weight: 900;
+  line-height: .95;
+  text-align: center;
+  text-transform: uppercase;
+
+  /* Paper text with an ink outline reads on every fill in the set; the
+     category's own colour does not, being close to its own artwork. */
+  color: var(--paper);
+  text-shadow:
+     .35cqw  .35cqw 0 var(--ink), -.35cqw  .35cqw 0 var(--ink),
+     .35cqw -.35cqw 0 var(--ink), -.35cqw -.35cqw 0 var(--ink),
+    0 .7cqw 0 var(--ink);
+}
+
+.category-label:disabled {
+  filter: grayscale(1);
+  opacity: .6;
+  text-decoration: line-through;
+}
+
+/* ------------------------------------------------------- question screen */
+
+.category-heading {
+  color: var(--category-color);
+  font-size: clamp(30px, 10vw, 50px);
+  /* Room for the drop shadow: at .9 the shadow of one line lands on the
+     ascenders of the next. */
+  line-height: 1.05;
+  text-transform: uppercase;
+  text-shadow: 3px 3px 0 var(--paper), 5px 5px 0 var(--ink);
+}
+
+.card {
+  position: relative;
+  padding: 18px;
+  border: var(--edge);
+  border-radius: 20px;
+  box-shadow: var(--pop);
+  background: var(--paper);
+}
+
+.question { font-size: clamp(21px, 6.4vw, 31px); font-weight: 800; }
+.choices { margin: 12px 0; padding-left: 25px; font-size: 17px; }
+.answer { padding: 12px; border-radius: 12px; background: #edf5ec; font-size: 19px; }
+
+.difficulty-badge {
+  /* Top left, not top right: the New Game button is fixed to the right
+     corner.  A rotate(90deg) about right-top put this off the top of the
+     screen, where the button then covered what was left of it. */
+  position: absolute;
+  top: -14px;
+  left: 14px;
+  padding: 5px 8px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  box-shadow: 2px 2px 0 var(--ink);
+  background: var(--sun);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+  transform: rotate(-3deg);
+}
+
+.actions {
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.actions [data-a="correct"]   { grid-area: 1 / 1; }
+.actions [data-a="incorrect"] { grid-area: 1 / 2; }
+.actions [data-a="answer"]    { grid-area: 2 / 1; }
+.actions [data-a="skip"]      { grid-area: 2 / 2; }
+
+/* Square artwork at half-width would tower over the card; cap it. */
+.correct, .incorrect {
+  width: min(100%, 132px);
+  justify-self: center;
+}
+
+.skip { background: #8a62e8; color: var(--paper); }
+
+/* -------------------------------------------------------- summary screen */
+
+/* The verdict and the hand-off share the top row.  Reserving --chrome on
+   the right means the row cannot slide under the New Game button at any
+   width, rather than relying on the two happening to miss each other. */
+.verdict {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 3vw, 20px);
+  padding-right: var(--chrome);
+}
+
+.result-icon,
+.next-turn {
+  flex: 0 1 auto;
+  width: min(45%, 150px);
+  margin: 0;
+}
+
+/* Same shape as the setup screen: a two-up grid, artwork on top and its
+   label underneath. */
+.scores {
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-items: start;
+  gap: 12px;
+}
+
+.score {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.score p {
+  font-size: 5.5cqw;
+  font-weight: 800;
+  text-align: center;
+}
+
+/*
+ * The wheel is drawn line art with transparent wedges, so the wedges are
+ * a conic-gradient underneath it rather than a border on top.  ::before
+ * paints below ::after, which is what stacks them.
+ */
+.pie { position: relative; aspect-ratio: 1; }
+
+.pie::before {
+  content: "";
+  position: absolute;
+  /* Inside the drawn rim, so no gradient shows past the linework. */
+  inset: 4%;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--c0)   0deg  60deg, var(--c1)  60deg 120deg, var(--c2) 120deg 180deg,
+    var(--c3) 180deg 240deg, var(--c4) 240deg 300deg, var(--c5) 300deg 360deg);
+}
+
+.pie::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--pie-frame) center / 100% 100% no-repeat;
+}
+
+/* ------------------------------------------------------------- new game */
+
+.new-game {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 72px;
+}
+
+/* ---------------------------------------------------------- player names */
+
+.player-name {
+  display: inline-block;
+  font-family: var(--display);
+  font-size: 1.12em;
+  font-weight: 900;
+  line-height: .9;
+  letter-spacing: .02em;
+}
+
+.player-name.nora   { color: #f05b91; }
+.player-name.claire { color: #7457d8; }
+.player-name.cori   { color: #119f8f; }
+.player-name.ethan  { color: #e77a21; }
+
+.small .player-name { font-size: 1.35em; }
+
+/* On a name plate the text sits on artwork, so it needs the comic outline
+   the running-text instances do not. */
+.person > button .player-name {
+  font-size: 1em;
+  color: var(--ink);
+  text-shadow: .3cqw .3cqw 0 var(--paper), .6cqw .6cqw 0 rgba(18, 40, 61, .25);
+}
