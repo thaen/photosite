@@ -54,12 +54,12 @@ test('the summary reflects scoring on later turns', async ({ page }) => {
   await page.getByRole('button', { name: 'History' }).click();
   await page.getByRole('button', { name: 'Correct', exact: true }).click();
   await expect(page.locator('.score').filter({ hasText: ': 1/6' })).toHaveCount(1);
-  await expect(page.locator('.pie').evaluateAll(pies => pies.some(pie => pie.style.getPropertyValue('--c3') === '#b66b27'))).resolves.toBeTruthy();
+  await expect(page.locator('.pie').evaluateAll(pies => pies.some(pie => pie.style.getPropertyValue('--c3') === 'var(--cat-3)'))).resolves.toBeTruthy();
   await page.getByRole('button', { name: 'Next turn' }).click();
   await page.getByRole('button', { name: 'Science' }).click();
   await page.getByRole('button', { name: 'Correct', exact: true }).click();
   await expect(page.locator('.score').filter({ hasText: ': 1/6' })).toHaveCount(2);
-  await expect(page.locator('.pie').evaluateAll(pies => pies.some(pie => pie.style.getPropertyValue('--c4') === '#6b52a3'))).resolves.toBeTruthy();
+  await expect(page.locator('.pie').evaluateAll(pies => pies.some(pie => pie.style.getPropertyValue('--c4') === 'var(--cat-4)'))).resolves.toBeTruthy();
 });
 
 test('a filled category is disabled on that player’s next turn', async ({ page }) => {
