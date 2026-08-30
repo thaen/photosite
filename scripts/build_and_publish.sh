@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Build the site and publish only successful doit targets. No deletion is allowed.
+# Build the site, append changed deployable targets to a durable upload queue,
+# then publish queued files. No deletion is allowed.
 set -euo pipefail
 
 root=$(cd "$(dirname "$0")/.." && pwd)
@@ -10,18 +11,13 @@ aws=${PHOTOSITE_AWS:-/usr/local/bin/aws}
 
 cd "$root"
 mkdir -p "$(dirname "$pending_list")"
+touch "$pending_list"
 
-if [[ -s "$pending_list" ]]; then
-    printf 'Resuming %s.\n' "$pending_list"
-else
-    : > "$pending_list"
-    PHOTOSITE_UPLOAD_LIST="$pending_list" \
-        .venv/bin/doit run -n "${PHOTOSITE_DOIT_PROCESSES:-4}"
-    sort -u "$pending_list" -o "$pending_list"
-fi
+PHOTOSITE_UPLOAD_LIST="$pending_list" \
+    .venv/bin/doit run -n "${PHOTOSITE_DOIT_PROCESSES:-4}"
 
 if [[ ! -s "$pending_list" ]]; then
-    printf 'The build has no changed deployable files.\n'
+    printf 'The upload queue is empty.\n'
     exit 0
 fi
 
@@ -32,5 +28,8 @@ if [[ ${PHOTOSITE_RELEASE_DRY_RUN:-0} == 1 ]]; then
 fi
 
 python3 scripts/upload_doit_targets.py "${upload_args[@]}"
-: > "$pending_list"
-printf 'The upload list is complete.\n'
+if [[ ! -s "$pending_list" ]]; then
+    printf 'The upload queue is complete.\n'
+else
+    printf 'The upload queue still has queued files.\n'
+fi
