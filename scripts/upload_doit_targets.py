@@ -2,7 +2,6 @@
 """Upload the queued deployable paths that successful builds recorded."""
 
 import argparse
-import email.utils
 import os
 import subprocess
 import tempfile
@@ -39,19 +38,19 @@ def remote_is_current(args, entry, source):
     if entry.mtime_ns is None or entry.size is None:
         return False
     try:
-        result = run_aws([
-            "s3api", "head-object", "--bucket", args.bucket, "--key", entry.key,
-            "--query", "{LastModified:LastModified,ContentLength:ContentLength}", "--output", "json",
-        ], args.aws, args.profile)
+        result = run_aws(["s3", "ls", f"s3://{args.bucket}/{entry.key}"], args.aws, args.profile)
     except subprocess.CalledProcessError:
         return False
-    import json
-    data = json.loads(result.stdout)
-    if int(data["ContentLength"]) != source.stat().st_size:
+    line = result.stdout.strip()
+    if not line:
         return False
-    remote_dt = email.utils.parsedate_to_datetime(data["LastModified"])
-    if remote_dt.tzinfo is None:
-        remote_dt = remote_dt.replace(tzinfo=timezone.utc)
+    parts = line.split(maxsplit=3)
+    if len(parts) < 4:
+        return False
+    remote_dt = datetime.fromisoformat(f"{parts[0]}T{parts[1]}+00:00")
+    remote_size = int(parts[2])
+    if remote_size != source.stat().st_size:
+        return False
     queued_dt = datetime.fromtimestamp(entry.mtime_ns / 1_000_000_000, timezone.utc)
     return remote_dt >= queued_dt
 
