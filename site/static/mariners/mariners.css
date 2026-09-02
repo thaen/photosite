@@ -26,7 +26,8 @@ button:hover, button:focus-visible { color: #101010; background: #ddd; }
 .mound { fill: #777; }
 .base rect { fill: #ddd; }
 .fielder text, .runner text { fill: #ddd; font: 700 13px ui-monospace, SFMono-Regular, Menlo, monospace; text-anchor: middle; }
-.runner text { fill: #aaa; font-weight: 400; }
+.fielder text.mariner, .runner text.mariner { fill: #00a8a8; }
+.runner text { fill: #ddd; font-weight: 400; }
 .note { color: #aaa; font-size: .82rem; }
 .controls { font-size: .82rem; }
 .pitches { display: block; max-height: calc(100vh - 15rem); margin: .25rem 0 0; padding: 0; overflow: auto; list-style: none; }
