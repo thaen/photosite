@@ -1,6 +1,7 @@
 {
   "private": true,
   "scripts": {
+    "test:mariners": "playwright test tests/mariners.spec.mjs --reporter=line",
     "test:trivia": "playwright test tests/trivia.spec.mjs --reporter=line"
   },
   "devDependencies": {

@@ -200,28 +200,28 @@
       .filter((team) => String(team.team?.id) === String(MARINERS_ID))
       .flatMap((team) => Object.values(team.players || []).map((player) => player.person.id)));
     const number = (person) => person ? directory.get(person.id)?.jerseyNumber || "?" : "-";
-    const setText = (id, text, person) => {
+    const setText = (id, text, person, useTeamColor = false) => {
       const label = document.querySelector(`#${id}`);
       label.textContent = text;
-      label.classList.toggle("mariner", mariners.has(person?.id));
+      label.classList.toggle("mariner", useTeamColor && mariners.has(person?.id));
     };
-    setText("fielder-center", `CF ${number(defense.center)}`, defense.center);
-    setText("fielder-left", `LF ${number(defense.left)}`, defense.left);
-    setText("fielder-right", `RF ${number(defense.right)}`, defense.right);
-    setText("fielder-shortstop", `SS ${number(defense.shortstop)}`, defense.shortstop);
-    setText("fielder-second", `2B ${number(defense.second)}`, defense.second);
-    setText("fielder-third", `3B ${number(defense.third)}`, defense.third);
-    setText("fielder-first", `1B ${number(defense.first)}`, defense.first);
-    setText("fielder-pitcher", `P ${number(defense.pitcher)}`, defense.pitcher);
-    setText("fielder-catcher", `C ${number(defense.catcher)}`, defense.catcher);
+    setText("fielder-center", `CF ${number(defense.center)}`, defense.center, true);
+    setText("fielder-left", `LF ${number(defense.left)}`, defense.left, true);
+    setText("fielder-right", `RF ${number(defense.right)}`, defense.right, true);
+    setText("fielder-shortstop", `SS ${number(defense.shortstop)}`, defense.shortstop, true);
+    setText("fielder-second", `2B ${number(defense.second)}`, defense.second, true);
+    setText("fielder-third", `3B ${number(defense.third)}`, defense.third, true);
+    setText("fielder-first", `1B ${number(defense.first)}`, defense.first, true);
+    setText("fielder-pitcher", `P ${number(defense.pitcher)}`, defense.pitcher, true);
+    setText("fielder-catcher", `C ${number(defense.catcher)}`, defense.catcher, true);
     setText("runner-second", `R ${number(offense.second)}`, offense.second);
     setText("runner-third", `R ${number(offense.third)}`, offense.third);
     setText("runner-first", `R ${number(offense.first)}`, offense.first);
     setText("batter", `B ${number(offense.batter)}`, offense.batter);
     elements.field.setAttribute("aria-label", `Defensive alignment for ${defense.team?.name || "the fielding team"}; batter and runners are shown at the bases.`);
     elements.fieldNote.textContent = demo.active
-      ? "Seattle labels are teal. Visitor labels are white. The defense is the final alignment in this cached game."
-      : "Seattle labels are teal. Visitor labels are white.";
+      ? "Seattle defenders are teal. The batter and runners are white. The defense is the final alignment in this cached game."
+      : "Seattle defenders are teal. The batter and runners are white.";
   }
 
   function pitchRows(feed) {
