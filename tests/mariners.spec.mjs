@@ -90,18 +90,26 @@ test('the play control advances the replay without a manual step', async ({ page
 
 test('the field shows Boston as white defenders during Seattle at-bats', async ({ page }) => {
   await seekPitch(page, 1);
-  await expectFieldLabel(page, 'batter', 'B 56', 'rgb(255, 255, 255)');
-  await expectFieldLabel(page, 'fielder-pitcher', 'P 65', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'batter', '56', 'rgb(255, 255, 255)');
+  await expect(page.locator('#batter')).not.toHaveClass(/mariner/);
+  await expectFieldLabel(page, 'fielder-pitcher', '65', 'rgb(255, 255, 255)');
   await expect(page.locator('#fielder-pitcher')).not.toHaveClass(/mariner/);
   await expect(page.locator('#field')).toHaveAccessibleName(/Boston Red Sox/);
+});
+
+test('the batter stays white when Seattle is batting', async ({ page }) => {
+  await seekPitch(page, 1);
+  await expect(page.locator('#batter')).toHaveText('56');
+  await expect(page.locator('#batter')).toHaveCSS('fill', 'rgb(255, 255, 255)');
+  await expect(page.locator('#batter')).not.toHaveClass(/mariner/);
 });
 
 test('the field changes both teams, player numbers, and colors at the first half-inning change', async ({ page }) => {
   await seekPitch(page, 12);
   await expect(page.locator('#scoreboard')).toContainText('Bottom 1st');
-  await expectFieldLabel(page, 'batter', 'B 19', 'rgb(255, 255, 255)');
-  await expectFieldLabel(page, 'fielder-pitcher', 'P 22', 'rgb(0, 168, 168)');
-  await expectFieldLabel(page, 'fielder-center', 'CF 44', 'rgb(0, 168, 168)');
+  await expectFieldLabel(page, 'batter', '19', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'fielder-pitcher', '22', 'rgb(0, 168, 168)');
+  await expectFieldLabel(page, 'fielder-center', '44', 'rgb(0, 168, 168)');
   await expect(page.locator('#fielder-pitcher')).toHaveClass(/mariner/);
   await expect(page.locator('#field')).toHaveAccessibleName(/Seattle Mariners/);
 });
@@ -109,17 +117,17 @@ test('the field changes both teams, player numbers, and colors at the first half
 test('the field returns to the visitor defense at the top of the second inning', async ({ page }) => {
   await seekPitch(page, 27);
   await expect(page.locator('#scoreboard')).toContainText('Top 2nd');
-  await expectFieldLabel(page, 'batter', 'B 12', 'rgb(255, 255, 255)');
-  await expectFieldLabel(page, 'fielder-pitcher', 'P 65', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'batter', '12', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'fielder-pitcher', '65', 'rgb(255, 255, 255)');
   await expect(page.locator('#fielder-pitcher')).not.toHaveClass(/mariner/);
 });
 
 test('the field shows the cached runner at second base while retaining the current batter', async ({ page }) => {
   await seekPitch(page, 30);
-  await expectFieldLabel(page, 'runner-second', 'R 12', 'rgb(255, 255, 255)');
-  await expectFieldLabel(page, 'runner-first', 'R -', 'rgb(255, 255, 255)');
-  await expectFieldLabel(page, 'runner-third', 'R -', 'rgb(255, 255, 255)');
-  await expectFieldLabel(page, 'batter', 'B 2', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'runner-second', '12', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'runner-first', '-', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'runner-third', '-', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'batter', '2', 'rgb(255, 255, 255)');
 });
 
 test('all player labels remain legible without a horizontal phone-width overflow', async ({ page }) => {
@@ -127,17 +135,6 @@ test('all player labels remain legible without a horizontal phone-width overflow
   await expect(page.locator('#fielder-center')).toHaveCSS('stroke', 'rgb(16, 16, 16)');
   await expect(page.locator('#fielder-center')).toHaveCSS('stroke-width', '4px');
   await expect(page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).resolves.toBeTruthy();
-});
-
-test('the page has a semantic line-score table for Seattle and Boston', async ({ page }) => {
-  await seekPitch(page, 12);
-  const lineScore = page.getByRole('table', { name: /line score/i });
-  await expect(lineScore).toBeVisible({ timeout: 1_000 });
-  await expect(lineScore).toContainText('Seattle');
-  await expect(lineScore).toContainText('Boston');
-  await expect(lineScore).toContainText('R');
-  await expect(lineScore).toContainText('H');
-  await expect(lineScore).toContainText('E');
 });
 
 test('the page has a semantic box-score table with team totals and player results', async ({ page }) => {
@@ -181,6 +178,11 @@ test('the page has a pitch-zone diagram that marks the current cached pitch zone
   await expect(zone).toBeVisible({ timeout: 1_000 });
   await expect(zone.locator('[data-zone="9"]')).toHaveAttribute('data-current', 'true');
   await expect(zone).toContainText('9');
+  await expect(zone.locator('.zone-cell')).toHaveCount(13);
+  await expect(zone.locator('.zone-strike')).toHaveCount(9);
+  await expect(zone.locator('.zone-ball')).toHaveCount(4);
+  await expect(zone.locator('[data-zone="10"]')).toHaveCount(0);
+  await expect(zone.locator('[data-zone="15"]')).toHaveCount(0);
 });
 
 test('the page has an accessible player directory that connects jersey numbers to current positions', async ({ page }) => {
@@ -193,4 +195,46 @@ test('the page has an accessible player directory that connects jersey numbers t
   await expect(directory).toContainText('Roman Anthony');
   await expect(directory).toContainText('19');
   await expect(directory).toContainText('RF');
+});
+
+test('the live-game region puts the field, current pitch, and zone above the pitch feed on a phone', async ({ page }) => {
+  await startReplay(page);
+  const boxes = await page.locator('#field, #current-pitch, #pitch-zone, #pitches').evaluateAll((nodes) =>
+    Object.fromEntries(nodes.map((node) => [node.id, node.getBoundingClientRect().toJSON()])));
+  expect(boxes.field.y).toBeLessThan(boxes.pitches.y);
+  expect(boxes['current-pitch'].y).toBeLessThan(boxes.pitches.y);
+  expect(boxes['pitch-zone'].y).toBeLessThan(boxes.pitches.y);
+  await expect(page.getByRole('heading', { name: 'Line score' })).toHaveCount(0);
+  await expect(page.getByRole('table', { name: /line score/i })).toHaveCount(0);
+});
+
+test('the live game uses adjacent field and pitch panels on desktop', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await startReplay(page);
+  const boxes = await page.locator('#field, .live-details').evaluateAll((nodes) =>
+    nodes.map((node) => node.getBoundingClientRect().toJSON()));
+  expect(boxes[0].right).toBeLessThan(boxes[1].left);
+  expect(boxes[0].top).toBeLessThan(900);
+  expect(boxes[1].top).toBeLessThan(900);
+});
+
+test('the field contains numbers only and places batter above catcher at home', async ({ page }) => {
+  await startReplay(page);
+  await expect(page.locator('#fielder-pitcher')).toHaveText('65');
+  await expect(page.locator('#batter')).toHaveText('56');
+  const positions = await page.locator('#batter, #fielder-catcher').evaluateAll((nodes) =>
+    Object.fromEntries(nodes.map((node) => [node.id, Number(node.getAttribute('y'))])));
+  expect(positions.batter).toBeLessThan(positions['fielder-catcher']);
+});
+
+test('batting orders contain only cached batters and highlight the current batter', async ({ page }) => {
+  await startReplay(page);
+  const away = page.getByRole('table', { name: /Seattle batting order/i });
+  const home = page.getByRole('table', { name: /Boston batting order/i });
+  await expect(away.locator('tr:not(:first-child)')).toHaveCount(fixture.liveData.boxscore.teams.away.batters.length);
+  await expect(home.locator('tr:not(:first-child)')).toHaveCount(fixture.liveData.boxscore.teams.home.batters.length);
+  await expect(away.locator('tr.is-current-batter')).toContainText('Randy Arozarena');
+  await page.getByRole('button', { name: 'Step', exact: true }).click();
+  const nextName = pitches[1].play.matchup.batter.fullName;
+  await expect(away.locator('tr.is-current-batter')).toContainText(nextName);
 });

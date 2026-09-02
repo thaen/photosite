@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#101010">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-    <link rel="stylesheet" href="mariners.css?v=field-9">
+    <link rel="stylesheet" href="mariners.css?v=field-10">
     <title>Mariners Live Scoresheet | Troubles Roll By</title>
   </head>
   <body>
@@ -19,45 +19,45 @@
         <button id="demo-play" type="button">Play</button>
       </p>
 
-      <div class="summary-grid">
-        <section aria-labelledby="line-score-heading">
-          <h1 id="line-score-heading">Line score</h1>
-          <table id="line-score" aria-label="Line score"></table>
-        </section>
-        <section aria-labelledby="zone-heading">
-          <h1 id="zone-heading">Pitch zone</h1>
-          <svg id="pitch-zone" class="zone-svg" viewBox="0 0 150 150" role="img" aria-label="Pitch zone">
-            <g id="zone-cells"></g>
-          </svg>
-        </section>
-      </div>
-
-      <div class="columns">
+      <section id="live-game" class="live-game" aria-label="Live game">
         <section aria-labelledby="field-heading">
           <h1 id="field-heading">Field</h1>
           <svg id="field" class="field-svg" viewBox="0 0 650 500" role="img" aria-label="Live baseball field">
             <image class="field-base" href="field-base.svg" width="650" height="500" />
-            <g class="fielder"><text id="fielder-center" x="328" y="70"></text><text id="fielder-left" x="116" y="195"></text><text id="fielder-right" x="540" y="195"></text><text id="fielder-shortstop" x="248" y="292"></text><text id="fielder-second" x="408" y="292"></text><text id="fielder-third" x="180" y="370"></text><text id="fielder-first" x="476" y="370"></text><text id="fielder-pitcher" x="328" y="310"></text><text id="fielder-catcher" x="328" y="392"></text></g>
-            <g class="runner"><text id="runner-second" x="328" y="178"></text><text id="runner-third" x="174" y="280"></text><text id="runner-first" x="482" y="280"></text><text id="batter" x="328" y="485"></text></g>
+            <g class="fielder"><text id="fielder-center" x="328" y="70"></text><text id="fielder-left" x="116" y="195"></text><text id="fielder-right" x="540" y="195"></text><text id="fielder-shortstop" x="248" y="292"></text><text id="fielder-second" x="408" y="292"></text><text id="fielder-third" x="180" y="370"></text><text id="fielder-first" x="476" y="370"></text><text id="fielder-pitcher" x="328" y="310"></text><text id="fielder-catcher" x="328" y="485"></text></g>
+            <g class="runner"><text id="runner-second" x="328" y="178"></text><text id="runner-third" x="174" y="280"></text><text id="runner-first" x="482" y="280"></text><text id="batter" x="328" y="405"></text></g>
           </svg>
           <p id="field-note" class="note"></p>
         </section>
 
-        <section aria-labelledby="pitch-heading">
+        <section class="live-details" aria-labelledby="pitch-heading">
+          <section aria-labelledby="current-pitch-heading">
+            <h1 id="current-pitch-heading">Current pitch</h1>
+            <p id="current-pitch" class="current-pitch" aria-live="polite"></p>
+          </section>
+          <section aria-labelledby="zone-heading">
+            <h1 id="zone-heading">Pitch zone</h1>
+            <svg id="pitch-zone" class="zone-svg" viewBox="0 0 150 150" role="img" aria-label="Pitch zone">
+              <g id="zone-cells"></g>
+            </svg>
+            <p class="note">Zones 1–9 are inside the strike zone. Zones 11–14 are outside it.</p>
+          </section>
+          <section aria-labelledby="pitch-heading">
           <div class="heading-row">
             <h1 id="pitch-heading">Pitch-by-pitch</h1>
             <button id="refresh" type="button">Refresh</button>
           </div>
           <p id="message" class="note" aria-live="polite"></p>
           <ol id="pitches" class="panel pitches" aria-live="polite"></ol>
+          </section>
         </section>
-      </div>
+      </section>
 
       <section aria-labelledby="box-score-heading">
         <h1 id="box-score-heading">Box score</h1>
         <table id="box-score" aria-label="Box score"></table>
       </section>
-      <div class="summary-grid">
+      <section id="batting-orders" class="summary-grid" aria-label="Batting orders">
         <section aria-labelledby="away-lineup-heading">
           <h1 id="away-lineup-heading">Seattle batting order</h1>
           <table id="away-lineup" aria-label="Seattle batting order"></table>
@@ -66,7 +66,7 @@
           <h1 id="home-lineup-heading">Boston batting order</h1>
           <table id="home-lineup" aria-label="Boston batting order"></table>
         </section>
-      </div>
+      </section>
       <section aria-labelledby="directory-heading">
         <h1 id="directory-heading">Players and positions</h1>
         <table id="player-directory" aria-label="Players and positions"></table>
@@ -75,6 +75,6 @@
       <p id="updated" class="note"></p>
       <p class="note">The page checks for updates only while it is visible.</p>
     </main>
-    <script src="mariners.js?v=field-3"></script>
+    <script src="mariners.js?v=field-10"></script>
   </body>
 </html>

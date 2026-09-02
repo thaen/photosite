@@ -15,8 +15,10 @@ p { margin: .35rem 0; }
 button { padding: 0 .35rem; border: 1px solid #aaa; color: #ddd; background: transparent; font: inherit; cursor: pointer; }
 button:hover, button:focus-visible { color: #101010; background: #ddd; }
 .panel { margin: .25rem 0 1rem; overflow-x: auto; white-space: pre; font: inherit; line-height: 1.15; }
-.columns { display: grid; grid-template-columns: minmax(20rem, .75fr) minmax(28rem, 1.25fr); gap: 1rem; align-items: start; }
-.columns > section { min-width: 0; }
+.live-game { display: grid; grid-template-columns: minmax(24rem, .85fr) minmax(28rem, 1.15fr); gap: 1rem; align-items: start; }
+.live-game > section, .live-details { min-width: 0; }
+.live-details > section { margin-bottom: .75rem; }
+.current-pitch { margin: .15rem 0 .5rem; line-height: 1.2; }
 .heading-row { display: flex; justify-content: space-between; align-items: baseline; }
 .summary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: start; margin: .5rem 0 1rem; }
 table { width: 100%; border-collapse: collapse; font: inherit; font-size: .82rem; }
@@ -24,7 +26,10 @@ th, td { padding: .1rem .3rem; border: 1px dotted #555; text-align: left; }
 th { color: #aaa; font-weight: 400; }
 .zone-svg { display: block; width: min(100%, 10rem); height: auto; }
 .zone-cell { fill: #202020; stroke: #aaa; stroke-width: 1; }
+.zone-cell.zone-strike { fill: #333; }
+.zone-cell.zone-ball { fill: #181818; }
 .zone-cell[data-current="true"] { fill: #00a8a8; stroke: #fff; stroke-width: 2; }
+.is-current-batter { background: #004d4d; color: #fff; }
 .field-svg { display: block; width: min(100%, 28rem); height: auto; margin: .25rem auto .5rem; overflow: visible; }
 .field-base { pointer-events: none; }
 .fielder text, .runner text { fill: #fff; font: 700 30px ui-monospace, SFMono-Regular, Menlo, monospace; text-anchor: middle; stroke: #101010; stroke-linejoin: round; stroke-width: 4px; paint-order: stroke fill; }
@@ -37,7 +42,7 @@ th { color: #aaa; font-weight: 400; }
 .new { color: #fff; background: #222; }
 
 @media (max-width: 70rem) {
-  .columns { grid-template-columns: 1fr; }
+  .live-game { grid-template-columns: 1fr; }
   .summary-grid { grid-template-columns: 1fr; }
   .pitches { max-height: none; }
 }

@@ -20,7 +20,7 @@
     demoStep: document.querySelector("#demo-step"),
     demoPlay: document.querySelector("#demo-play"),
     updated: document.querySelector("#updated"),
-    lineScore: document.querySelector("#line-score"),
+    currentPitch: document.querySelector("#current-pitch"),
     pitchZone: document.querySelector("#pitch-zone"),
     zoneCells: document.querySelector("#zone-cells"),
     boxScore: document.querySelector("#box-score"),
@@ -247,19 +247,19 @@
       label.textContent = text;
       label.classList.toggle("mariner", useTeamColor && mariners.has(person?.id));
     };
-    setText("fielder-center", `CF ${number(defense.center)}`, defense.center, true);
-    setText("fielder-left", `LF ${number(defense.left)}`, defense.left, true);
-    setText("fielder-right", `RF ${number(defense.right)}`, defense.right, true);
-    setText("fielder-shortstop", `SS ${number(defense.shortstop)}`, defense.shortstop, true);
-    setText("fielder-second", `2B ${number(defense.second)}`, defense.second, true);
-    setText("fielder-third", `3B ${number(defense.third)}`, defense.third, true);
-    setText("fielder-first", `1B ${number(defense.first)}`, defense.first, true);
-    setText("fielder-pitcher", `P ${number(defense.pitcher)}`, defense.pitcher, true);
-    setText("fielder-catcher", `C ${number(defense.catcher)}`, defense.catcher, true);
-    setText("runner-second", `R ${number(offense.second)}`, offense.second);
-    setText("runner-third", `R ${number(offense.third)}`, offense.third);
-    setText("runner-first", `R ${number(offense.first)}`, offense.first);
-    setText("batter", `B ${number(offense.batter)}`, offense.batter);
+    setText("fielder-center", number(defense.center), defense.center, true);
+    setText("fielder-left", number(defense.left), defense.left, true);
+    setText("fielder-right", number(defense.right), defense.right, true);
+    setText("fielder-shortstop", number(defense.shortstop), defense.shortstop, true);
+    setText("fielder-second", number(defense.second), defense.second, true);
+    setText("fielder-third", number(defense.third), defense.third, true);
+    setText("fielder-first", number(defense.first), defense.first, true);
+    setText("fielder-pitcher", number(defense.pitcher), defense.pitcher, true);
+    setText("fielder-catcher", number(defense.catcher), defense.catcher, true);
+    setText("runner-second", number(offense.second), offense.second);
+    setText("runner-third", number(offense.third), offense.third);
+    setText("runner-first", number(offense.first), offense.first);
+    setText("batter", number(offense.batter), offense.batter);
     elements.field.setAttribute("aria-label", `Defensive alignment for ${defense.team?.name || "the fielding team"}; batter and runners are shown at the bases.`);
     elements.fieldNote.textContent = demo.active
       ? "Seattle defenders are teal. The batter and runners are white. The defensive team and pitcher follow this cached pitch."
@@ -296,36 +296,28 @@
     return { score, hits, errors };
   }
 
-  function renderLineScore(game, feed) {
-    if (!game || !feed) {
-      elements.lineScore.replaceChildren();
-      return;
-    }
-    const away = teamTotals(feed, "away", game);
-    const home = teamTotals(feed, "home", game);
-    fillTable(elements.lineScore, ["Team", "R", "H", "E"], [
-      [game.teams.away.team.name, away.score, away.hits, away.errors],
-      [game.teams.home.team.name, home.score, home.hits, home.errors],
-    ]);
-  }
-
   function renderPitchZone(feed) {
     const current = currentPitch(feed)?.pitchData?.zone;
     elements.zoneCells.replaceChildren();
-    for (let zone = 1; zone <= 14; zone += 1) {
-      const index = zone - 1;
+    const zones = [
+      [1, 42, 38], [2, 66, 38], [3, 90, 38],
+      [4, 42, 62], [5, 66, 62], [6, 90, 62],
+      [7, 42, 86], [8, 66, 86], [9, 90, 86],
+      [11, 10, 10], [12, 114, 10], [13, 10, 114], [14, 114, 114],
+    ];
+    for (const [zone, x, y] of zones) {
       const cell = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-      cell.setAttribute("class", "zone-cell");
+      cell.setAttribute("class", `zone-cell ${zone <= 9 ? "zone-strike" : "zone-ball"}`);
       cell.setAttribute("data-zone", zone);
       cell.setAttribute("data-current", String(zone === current));
-      cell.setAttribute("x", 10 + (index % 3) * 44);
-      cell.setAttribute("y", 10 + Math.floor(index / 3) * 28);
-      cell.setAttribute("width", 40);
+      cell.setAttribute("x", x);
+      cell.setAttribute("y", y);
+      cell.setAttribute("width", 24);
       cell.setAttribute("height", 24);
       elements.zoneCells.append(cell);
       const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      label.setAttribute("x", 30 + (index % 3) * 44);
-      label.setAttribute("y", 27 + Math.floor(index / 3) * 28);
+      label.setAttribute("x", x + 12);
+      label.setAttribute("y", y + 17);
       label.setAttribute("text-anchor", "middle");
       label.setAttribute("fill", "#fff");
       label.setAttribute("font-size", "12");
@@ -335,11 +327,15 @@
     elements.pitchZone.setAttribute("aria-label", `Pitch zone${current ? `; zone ${current} is current` : ""}`);
   }
 
-  function renderLineup(table, team) {
+  function renderLineup(table, team, currentBatter) {
     const players = team?.batters?.map((id) => team.players[`ID${id}`]).filter(Boolean) || [];
-    fillTable(table, ["#", "Player", "No.", "Pos."], players.map((player, index) => [
-      index + 1, player.person.fullName, player.jerseyNumber || "-", player.position?.abbreviation || "-",
-    ]));
+    const header = tableRow(["#", "Player", "No.", "Pos."], true);
+    const rows = players.map((player, index) => {
+      const row = tableRow([index + 1, player.person.fullName, player.jerseyNumber || "-", player.position?.abbreviation || "-"]);
+      row.classList.toggle("is-current-batter", player.person.id === currentBatter?.id);
+      return row;
+    });
+    table.replaceChildren(header, ...rows);
   }
 
   function renderBoxScore(feed) {
@@ -368,12 +364,16 @@
   }
 
   function renderScoresheet(game, feed) {
-    renderLineScore(game, feed);
     renderPitchZone(feed);
     const teams = feed?.liveData?.boxscore?.teams;
+    const batter = currentPlay(feed)?.matchup?.batter;
+    const pitch = currentPitch(feed);
+    elements.currentPitch.textContent = pitch
+      ? `Zone ${pitch.pitchData?.zone ?? "-"}: ${pitch.details?.description || "Pitch"}`
+      : "No pitch has been recorded.";
     renderBoxScore(feed);
-    renderLineup(elements.awayLineup, teams?.away);
-    renderLineup(elements.homeLineup, teams?.home);
+    renderLineup(elements.awayLineup, teams?.away, batter);
+    renderLineup(elements.homeLineup, teams?.home, batter);
     renderPlayerDirectory(feed);
   }
 
