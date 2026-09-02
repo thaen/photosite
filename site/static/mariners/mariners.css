@@ -19,12 +19,8 @@ button:hover, button:focus-visible { color: #101010; background: #ddd; }
 .columns > section { min-width: 0; }
 .heading-row { display: flex; justify-content: space-between; align-items: baseline; }
 .field-svg { display: block; width: min(100%, 28rem); height: auto; margin: .25rem auto .5rem; overflow: visible; }
-.outfield { fill: #1c1c1c; }
-.infield { fill: #4a4a4a; }
-.foul-lines, .base-lines { fill: none; stroke: #fff; stroke-width: 3; }
-.mound { fill: #888; stroke: #ddd; stroke-width: 1.5; }
-.base rect { fill: #ddd; }
-.fielder text, .runner text { fill: #ddd; font: 700 13px ui-monospace, SFMono-Regular, Menlo, monospace; text-anchor: middle; }
+.field-base { pointer-events: none; }
+.fielder text, .runner text { fill: #ddd; font: 700 20px ui-monospace, SFMono-Regular, Menlo, monospace; text-anchor: middle; }
 .fielder text.mariner, .runner text.mariner { fill: #00a8a8; }
 .runner text { fill: #ddd; font-weight: 400; }
 .note { color: #aaa; font-size: .82rem; }
