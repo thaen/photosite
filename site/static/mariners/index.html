@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#101010">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-    <link rel="stylesheet" href="mariners.css">
+    <link rel="stylesheet" href="mariners.css?v=field-3">
     <title>Mariners Live Scoresheet | Troubles Roll By</title>
   </head>
   <body>
@@ -22,15 +22,16 @@
       <div class="columns">
         <section aria-labelledby="field-heading">
           <h1 id="field-heading">Field</h1>
-          <svg id="field" class="field-svg" viewBox="0 0 320 360" role="img" aria-label="Live baseball field">
-            <path class="outfield" d="M160 322 L9 171 Q160 -4 311 171 Z" />
-            <path class="foul-lines" d="M160 322 L9 171 M160 322 L311 171" />
-            <path class="fence" d="M9 171 Q160 -4 311 171" />
-            <path class="infield" d="M160 302 L250 212 L160 122 L70 212 Z" />
-            <circle class="mound" cx="160" cy="212" r="7" />
-            <g class="base"><rect x="154" y="116" width="12" height="12" transform="rotate(45 160 122)" /><rect x="244" y="206" width="12" height="12" transform="rotate(45 250 212)" /><rect x="154" y="296" width="12" height="12" transform="rotate(45 160 302)" /><rect x="64" y="206" width="12" height="12" transform="rotate(45 70 212)" /></g>
-            <g class="fielder"><text id="fielder-center" x="160" y="38"></text><text id="fielder-left" x="54" y="113"></text><text id="fielder-right" x="266" y="113"></text><text id="fielder-shortstop" x="110" y="174"></text><text id="fielder-second" x="210" y="174"></text><text id="fielder-third" x="43" y="236"></text><text id="fielder-first" x="277" y="236"></text><text id="fielder-pitcher" x="160" y="203"></text><text id="fielder-catcher" x="160" y="290"></text></g>
-            <g class="runner"><text id="runner-second" x="160" y="106"></text><text id="runner-third" x="35" y="203"></text><text id="runner-first" x="285" y="203"></text><text id="batter" x="160" y="345"></text></g>
+          <svg id="field" class="field-svg" viewBox="0 0 650 500" role="img" aria-label="Live baseball field">
+            <!-- Derived from Wikimedia Commons' Baseball diamond simplified SVG; explanatory labels are omitted. -->
+            <path class="outfield" d="M150 500 H0 V0 H650 V500 H508 Z" />
+            <path class="infield" d="M328.5 439.5 L538.5 229.5 L328.5 19.5 L123.5 224.5 Z" />
+            <circle class="mound" cx="328.5" cy="319.5" r="18" />
+            <path class="foul-lines" d="M294 405 L0 111 M363 405 L650 118" />
+            <path class="base-lines" d="M328.5 439.5 L538.5 229.5 L328.5 19.5 L123.5 224.5 Z" />
+            <g class="base"><rect x="321" y="12" width="15" height="15" transform="rotate(45 328.5 19.5)" /><rect x="531" y="222" width="15" height="15" transform="rotate(45 538.5 229.5)" /><rect x="321" y="432" width="15" height="15" transform="rotate(45 328.5 439.5)" /><rect x="116" y="217" width="15" height="15" transform="rotate(45 123.5 224.5)" /></g>
+            <g class="fielder"><text id="fielder-center" x="328" y="70"></text><text id="fielder-left" x="116" y="195"></text><text id="fielder-right" x="540" y="195"></text><text id="fielder-shortstop" x="260" y="285"></text><text id="fielder-second" x="396" y="285"></text><text id="fielder-third" x="190" y="350"></text><text id="fielder-first" x="466" y="350"></text><text id="fielder-pitcher" x="328" y="310"></text><text id="fielder-catcher" x="328" y="408"></text></g>
+            <g class="runner"><text id="runner-second" x="328" y="178"></text><text id="runner-third" x="174" y="280"></text><text id="runner-first" x="482" y="280"></text><text id="batter" x="328" y="485"></text></g>
           </svg>
           <p id="field-note" class="note"></p>
         </section>
@@ -48,6 +49,6 @@
       <p id="updated" class="note"></p>
       <p class="note">The page checks for updates only while it is visible.</p>
     </main>
-    <script src="mariners.js?v=field-2"></script>
+    <script src="mariners.js?v=field-3"></script>
   </body>
 </html>
