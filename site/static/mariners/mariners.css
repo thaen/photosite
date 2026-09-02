@@ -42,6 +42,8 @@ th { color: #aaa; font-weight: 400; }
 .controls { font-size: .82rem; }
 .pitches { display: block; max-height: calc(100vh - 15rem); margin: .25rem 0 0; padding: 0; overflow: auto; list-style: none; }
 .pitch { padding: .1rem 0; border-bottom: 1px dotted #555; }
+.pitch.batter-stripe { background: #1a1a1a; }
+.ascii-box-score { font: inherit; line-height: 1.3; }
 .new { color: #fff; background: #222; }
 
 @media (max-width: 70rem) {

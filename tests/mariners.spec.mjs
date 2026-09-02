@@ -71,6 +71,21 @@ test('the pitch feed is newest first and retains every pitch after stepping', as
   await expect(page.locator('#pitches .pitch').nth(2)).toHaveText(pitchText(pitches[0]));
 });
 
+test('the pitch feed stripes whole at-bats, not individual pitches', async ({ page }) => {
+  await seekPitch(page, 12);
+  const rows = page.locator('#pitches .pitch');
+  const batters = await rows.evaluateAll((nodes) => nodes.map((node) => ({
+    id: node.getAttribute('data-batter-id'),
+    striped: node.classList.contains('batter-stripe'),
+  })));
+  expect(new Set(batters.map((batter) => batter.striped))).toEqual(new Set([true, false]));
+  for (let index = 1; index < batters.length; index += 1) {
+    expect(batters[index].striped).toBe(batters[index - 1].id === batters[index].id
+      ? batters[index - 1].striped
+      : !batters[index - 1].striped);
+  }
+});
+
 test('the pitch feed shows ten recent entries until its history control is expanded', async ({ page }) => {
   await seekPitch(page, 12);
   const feed = page.locator('#pitches .pitch');
@@ -94,6 +109,16 @@ test('the upper-right summary uses MLB inning groups and recorded plate-appearan
   const boxes = await page.locator('#field, #recent-summary').evaluateAll((nodes) =>
     nodes.map((node) => node.getBoundingClientRect().toJSON()));
   expect(boxes[1].left).toBeGreaterThan(boxes[0].right);
+});
+
+test('the recent-innings panel omits a batter until the at-bat is complete', async ({ page }) => {
+  await seekPitch(page, 1);
+  await expect(page.locator('#recent-innings li')).toHaveCount(0);
+  await seekPitch(page, 3);
+  await expect(page.locator('#recent-innings')).toContainText('Randy Arozarena grounds out');
+
+  await seekPitch(page, 30);
+  await expect(page.locator('#recent-innings')).not.toContainText('Cole Young singles on a line drive to center fielder Ceddanne Rafaela.');
 });
 
 test('the step and reset controls move through the cached feed by one pitch and return to pitch one', async ({ page }) => {
@@ -194,14 +219,18 @@ test('all player labels remain legible without a horizontal phone-width overflow
   await expect(page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).resolves.toBeTruthy();
 });
 
-test('the page has a semantic box-score table with team totals and player results', async ({ page }) => {
+test('the page has an aligned ASCII box score without table grid lines', async ({ page }) => {
   await seekPitch(page, 12);
-  const boxScore = page.getByRole('table', { name: /box score/i });
+  const boxScore = page.locator('pre#box-score');
   await expect(boxScore).toBeVisible({ timeout: 1_000 });
-  await expect(boxScore).toContainText('Seattle Mariners');
-  await expect(boxScore).toContainText('Boston Red Sox');
+  await expect(boxScore).toContainText('TEAM');
+  await expect(boxScore).toContainText('PLAYER');
+  await expect(boxScore).toContainText('SEA');
+  await expect(boxScore).toContainText('BOS');
   await expect(boxScore).toContainText('Arozarena');
   await expect(boxScore).toContainText('Anthony');
+  await expect(page.getByRole('table', { name: /box score/i })).toHaveCount(0);
+  await expect(boxScore).toHaveCSS('font-family', /monospace/);
 });
 
 test('the page has a Seattle batting-order table with name, jersey number, and position', async ({ page }) => {

@@ -118,7 +118,11 @@
       },
     };
     const visiblePlays = plays.filter((candidate) => candidate.about.atBatIndex < play.about.atBatIndex)
-      .concat([{ ...play, playEvents: play.playEvents.filter((candidate) => candidate.index <= event.index) }]);
+      .concat([{
+        ...play,
+        about: { ...play.about, isComplete: isLastPitch },
+        playEvents: play.playEvents.filter((candidate) => candidate.index <= event.index),
+      }]);
     return { game, feed: { ...source, gameData: { ...gameData, status: { detailedState: "Replay: Seattle at Boston" } }, liveData: { ...source.liveData, linescore: replayLinescore, plays: { ...source.liveData.plays, allPlays: visiblePlays } } } };
   }
 
@@ -361,14 +365,18 @@
   function renderBoxScore(feed) {
     const teams = feed?.liveData?.boxscore?.teams;
     if (!teams) {
-      elements.boxScore.replaceChildren();
+      elements.boxScore.textContent = "";
       return;
     }
     const rows = ["away", "home"].flatMap((side) => Object.values(teams[side].players)
       .filter((player) => player.stats?.batting?.plateAppearances)
       .slice(0, 9)
-      .map((player) => [teams[side].team.name, player.person.fullName, player.stats.batting.atBats || 0, player.stats.batting.hits || 0, player.stats.batting.runs || 0, player.stats.batting.rbi || 0]));
-    fillTable(elements.boxScore, ["Team", "Player", "AB", "H", "R", "RBI"], rows);
+      .map((player) => [teams[side].team.id === MARINERS_ID ? "SEA" : "BOS", player.person.fullName, player.stats.batting.atBats || 0, player.stats.batting.hits || 0, player.stats.batting.runs || 0, player.stats.batting.rbi || 0]));
+    const headers = ["TEAM", "PLAYER", "AB", "H", "R", "RBI"];
+    const widths = headers.map((header, index) => Math.max(header.length, ...rows.map((row) => String(row[index]).length)));
+    elements.boxScore.textContent = [headers, ...rows]
+      .map((row) => row.map((value, index) => String(value).padEnd(widths[index])).join("  ").trimEnd())
+      .join("\n");
   }
 
   function renderPlayerDirectory(feed) {
@@ -407,11 +415,7 @@
   }
 
   function completedPlays(feed) {
-    return visiblePlays(feed).filter((play, index, plays) => {
-      if (index < plays.length - 1) return true;
-      const pitches = play.playEvents?.filter((event) => event.isPitch) || [];
-      return pitches.at(-1)?.index === currentPitch(feed)?.index;
-    });
+    return visiblePlays(feed).filter((play) => play.about?.isComplete);
   }
 
   function renderRecentInnings(feed) {
@@ -446,6 +450,8 @@
     elements.pitchToggle.hidden = rows.length <= 10;
     elements.pitchToggle.textContent = pitchFeedExpanded ? "Show recent 10 pitches" : `Show all ${rows.length} pitches`;
     elements.pitchToggle.setAttribute("aria-expanded", String(pitchFeedExpanded));
+    let priorBatterId = null;
+    let stripe = false;
     for (const { play, event, key } of visibleRows) {
       const details = event.details || {};
       const data = event.pitchData || {};
@@ -462,7 +468,11 @@
       const batter = displayPlayer(play.matchup?.batter);
       const pitcher = displayPlayer(play.matchup?.pitcher);
       const item = document.createElement("li");
-      item.className = `pitch${!firstRender && !state.seenPitches.has(key) ? " new" : ""}`;
+      const batterId = String(play.matchup?.batter?.id || "");
+      if (batterId !== priorBatterId) stripe = !stripe;
+      priorBatterId = batterId;
+      item.className = `pitch${stripe ? " batter-stripe" : ""}${!firstRender && !state.seenPitches.has(key) ? " new" : ""}`;
+      item.dataset.batterId = batterId;
       item.textContent = `${inning} ${String(count.balls ?? 0)}-${String(count.strikes ?? 0)} ${speed} mph ${type}, zone ${zone}: ${details.description || "Pitch"} | ${batter} vs ${pitcher}`;
       elements.pitches.append(item);
       state.seenPitches.add(key);
