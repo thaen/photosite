@@ -5,6 +5,10 @@
   const MARINERS_ID = 136;
   const LIVE_REFRESH_MS = 10_000;
   const SCHEDULE_REFRESH_MS = 120_000;
+  const OPENING_ALIGNMENTS = {
+    136: { P: 693433, C: 663728, "1B": 647304, "2B": 702284, "3B": 801126, SS: 641487, LF: 668227, CF: 677594, RF: 686527 },
+    111: { P: 699151, C: 657136, "1B": 681508, "2B": 686765, "3B": 702332, SS: 596115, LF: 680776, CF: 678882, RF: 701350 },
+  };
   let state = { game: null, feed: null, timecode: null, timer: null, seenPitches: new Set() };
   let demo = { active: false, index: 0, timer: null, source: null, pitches: [] };
 
@@ -111,7 +115,7 @@
       },
     };
     const visiblePlays = plays.filter((candidate) => candidate.about.atBatIndex < play.about.atBatIndex)
-      .concat([{ ...play, playEvents: play.playEvents.filter((candidate) => candidate.isPitch && candidate.index <= event.index) }]);
+      .concat([{ ...play, playEvents: play.playEvents.filter((candidate) => candidate.index <= event.index) }]);
     return { game, feed: { ...source, gameData: { ...gameData, status: { detailedState: "Replay: Seattle at Boston" } }, liveData: { ...source.liveData, linescore: replayLinescore, plays: { ...source.liveData.plays, allPlays: visiblePlays } } } };
   }
 
@@ -204,17 +208,29 @@
   function defenseForPlay(feed) {
     const play = currentPlay(feed);
     const team = teamForHalf(feed, play?.about?.halfInning);
+    const directory = playerDirectory(feed);
+    const opening = OPENING_ALIGNMENTS[team?.team?.id];
+    const alignment = Object.fromEntries(Object.entries(opening || {}).map(([position, id]) => [position, directory.get(id)?.person || null]));
+    for (const priorPlay of visiblePlays(feed)) {
+      const priorTeam = teamForHalf(feed, priorPlay.about?.halfInning);
+      if (priorTeam?.team?.id !== team?.team?.id) continue;
+      for (const event of priorPlay.playEvents || []) {
+        if (!event.isSubstitution || !["defensive_substitution", "pitching_substitution"].includes(event.details?.eventType)) continue;
+        const position = event.position?.abbreviation;
+        if (position) alignment[position] = directory.get(event.player?.id)?.person || event.player;
+      }
+    }
     return {
       team: team?.team,
-      center: playerAtPosition(team, "CF"),
-      left: playerAtPosition(team, "LF"),
-      right: playerAtPosition(team, "RF"),
-      shortstop: playerAtPosition(team, "SS"),
-      second: playerAtPosition(team, "2B"),
-      third: playerAtPosition(team, "3B"),
-      first: playerAtPosition(team, "1B"),
-      pitcher: play?.matchup?.pitcher || playerAtPosition(team, "P"),
-      catcher: playerAtPosition(team, "C"),
+      center: alignment.CF || playerAtPosition(team, "CF"),
+      left: alignment.LF || playerAtPosition(team, "LF"),
+      right: alignment.RF || playerAtPosition(team, "RF"),
+      shortstop: alignment.SS || playerAtPosition(team, "SS"),
+      second: alignment["2B"] || playerAtPosition(team, "2B"),
+      third: alignment["3B"] || playerAtPosition(team, "3B"),
+      first: alignment["1B"] || playerAtPosition(team, "1B"),
+      pitcher: play?.matchup?.pitcher || alignment.P || playerAtPosition(team, "P"),
+      catcher: alignment.C || playerAtPosition(team, "C"),
     };
   }
 
@@ -242,7 +258,7 @@
       .filter((team) => String(team.team?.id) === String(MARINERS_ID))
       .flatMap((team) => Object.values(team.players || []).map((player) => player.person.id)));
     const number = (person) => person ? directory.get(person.id)?.jerseyNumber || "?" : "-";
-    const setText = (id, text, person, useTeamColor = false) => {
+    const setText = (id, text, person, useTeamColor = true) => {
       const label = document.querySelector(`#${id}`);
       label.textContent = text;
       label.classList.toggle("mariner", useTeamColor && mariners.has(person?.id));
@@ -256,10 +272,10 @@
     setText("fielder-first", number(defense.first), defense.first, true);
     setText("fielder-pitcher", number(defense.pitcher), defense.pitcher, true);
     setText("fielder-catcher", number(defense.catcher), defense.catcher, true);
-    setText("runner-second", number(offense.second), offense.second);
-    setText("runner-third", number(offense.third), offense.third);
-    setText("runner-first", number(offense.first), offense.first);
-    setText("batter", number(offense.batter), offense.batter);
+    setText("runner-second", number(offense.second), offense.second, true);
+    setText("runner-third", number(offense.third), offense.third, true);
+    setText("runner-first", number(offense.first), offense.first, true);
+    setText("batter", number(offense.batter), offense.batter, true);
     elements.field.setAttribute("aria-label", `Defensive alignment for ${defense.team?.name || "the fielding team"}; batter and runners are shown at the bases.`);
     elements.fieldNote.textContent = demo.active
       ? "Seattle defenders are teal. The batter and runners are white. The defensive team and pitcher follow this cached pitch."
