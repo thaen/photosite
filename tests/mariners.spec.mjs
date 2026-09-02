@@ -88,57 +88,78 @@ test('the play control advances the replay without a manual step', async ({ page
   await expect(page.locator('#pitches .pitch')).toHaveCount(2);
 });
 
-test('the field shows Boston as white defenders during Seattle at-bats', async ({ page }) => {
+test('the top of the first shows Seattle batting in teal and Boston fielding in white', async ({ page }) => {
   await seekPitch(page, 1);
-  await expectFieldLabel(page, 'batter', '56', 'rgb(255, 255, 255)');
-  await expect(page.locator('#batter')).not.toHaveClass(/mariner/);
-  await expectFieldLabel(page, 'fielder-pitcher', '65', 'rgb(255, 255, 255)');
-  await expect(page.locator('#fielder-pitcher')).not.toHaveClass(/mariner/);
+  await expect(page.locator('#scoreboard')).toContainText('Top 1st');
+  await expectFieldLabel(page, 'batter', '56', 'rgb(0, 168, 168)');
+  await expect(page.locator('#batter')).toHaveClass(/mariner/);
   await expect(page.locator('#field')).toHaveAccessibleName(/Boston Red Sox/);
+
+  // The visitor bats in the top half.  These are Boston's recorded starters,
+  // not the final-game position values from the box score.
+  await expectFieldLabel(page, 'fielder-pitcher', '65', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'fielder-catcher', '12', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'fielder-first', '30', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'fielder-second', '20', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'fielder-third', '5', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'fielder-shortstop', '10', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'fielder-left', '16', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'fielder-center', '3', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'fielder-right', '19', 'rgb(255, 255, 255)');
 });
 
-test('the batter stays white when Seattle is batting', async ({ page }) => {
-  await seekPitch(page, 1);
-  await expect(page.locator('#batter')).toHaveText('56');
-  await expect(page.locator('#batter')).toHaveCSS('fill', 'rgb(255, 255, 255)');
-  await expect(page.locator('#batter')).not.toHaveClass(/mariner/);
-});
-
-test('the batter stays white through every cached pitch', async ({ page }) => {
-  await startReplay(page);
-  const step = page.getByRole('button', { name: 'Step', exact: true });
-  for (let index = 1; index < pitches.length; index += 1) {
-    await step.evaluate((button) => button.click());
-    const batter = page.locator('#batter');
-    await expect(batter).not.toHaveClass(/mariner/);
-    await expect(batter).toHaveCSS('fill', 'rgb(255, 255, 255)');
-  }
-});
-
-test('the field changes both teams, player numbers, and colors at the first half-inning change', async ({ page }) => {
+test('the bottom of the first replaces every field player with Seattle and colors only Seattle teal', async ({ page }) => {
   await seekPitch(page, 12);
   await expect(page.locator('#scoreboard')).toContainText('Bottom 1st');
   await expectFieldLabel(page, 'batter', '19', 'rgb(255, 255, 255)');
-  await expectFieldLabel(page, 'fielder-pitcher', '22', 'rgb(0, 168, 168)');
-  await expectFieldLabel(page, 'fielder-center', '44', 'rgb(0, 168, 168)');
-  await expect(page.locator('#fielder-pitcher')).toHaveClass(/mariner/);
+  await expect(page.locator('#batter')).not.toHaveClass(/mariner/);
   await expect(page.locator('#field')).toHaveAccessibleName(/Seattle Mariners/);
+
+  // The home team bats in the bottom half, so Seattle's opening defense is on the field.
+  for (const [id, number] of Object.entries({
+    'fielder-pitcher': '22', 'fielder-catcher': '29', 'fielder-first': '12',
+    'fielder-second': '2', 'fielder-third': '90', 'fielder-shortstop': '3',
+    'fielder-left': '56', 'fielder-center': '44', 'fielder-right': '8',
+  })) {
+    await expectFieldLabel(page, id, number, 'rgb(0, 168, 168)');
+    await expect(page.locator(`#${id}`)).toHaveClass(/mariner/);
+  }
 });
 
-test('the field returns to the visitor defense at the top of the second inning', async ({ page }) => {
-  await seekPitch(page, 27);
-  await expect(page.locator('#scoreboard')).toContainText('Top 2nd');
-  await expectFieldLabel(page, 'batter', '12', 'rgb(255, 255, 255)');
-  await expectFieldLabel(page, 'fielder-pitcher', '65', 'rgb(255, 255, 255)');
-  await expect(page.locator('#fielder-pitcher')).not.toHaveClass(/mariner/);
-});
-
-test('the field shows the cached runner at second base while retaining the current batter', async ({ page }) => {
+test('the top of the second returns the complete Boston defense and colors every Seattle offensive player teal', async ({ page }) => {
   await seekPitch(page, 30);
-  await expectFieldLabel(page, 'runner-second', '12', 'rgb(255, 255, 255)');
-  await expectFieldLabel(page, 'runner-first', '-', 'rgb(255, 255, 255)');
-  await expectFieldLabel(page, 'runner-third', '-', 'rgb(255, 255, 255)');
-  await expectFieldLabel(page, 'batter', '2', 'rgb(255, 255, 255)');
+  await expect(page.locator('#scoreboard')).toContainText('Top 2nd');
+  await expect(page.locator('#field')).toHaveAccessibleName(/Boston Red Sox/);
+  await expectFieldLabel(page, 'batter', '2', 'rgb(0, 168, 168)');
+  await expect(page.locator('#batter')).toHaveClass(/mariner/);
+  await expectFieldLabel(page, 'runner-second', '12', 'rgb(0, 168, 168)');
+  await expect(page.locator('#runner-second')).toHaveClass(/mariner/);
+  await expectFieldLabel(page, 'fielder-center', '3', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'fielder-second', '20', 'rgb(255, 255, 255)');
+  await expect(page.locator('#fielder-center')).not.toHaveClass(/mariner/);
+  await expect(page.locator('#fielder-second')).not.toHaveClass(/mariner/);
+});
+
+test('the bottom of the second keeps the Boston runner and batter white while Seattle fields teal', async ({ page }) => {
+  await seekPitch(page, 59);
+  await expect(page.locator('#scoreboard')).toContainText('Bottom 2nd');
+  await expectFieldLabel(page, 'batter', '5', 'rgb(255, 255, 255)');
+  await expectFieldLabel(page, 'runner-first', '20', 'rgb(255, 255, 255)');
+  await expect(page.locator('#batter')).not.toHaveClass(/mariner/);
+  await expect(page.locator('#runner-first')).not.toHaveClass(/mariner/);
+  await expectFieldLabel(page, 'fielder-left', '56', 'rgb(0, 168, 168)');
+  await expectFieldLabel(page, 'fielder-third', '90', 'rgb(0, 168, 168)');
+  await expect(page.locator('#fielder-left')).toHaveClass(/mariner/);
+  await expect(page.locator('#fielder-third')).toHaveClass(/mariner/);
+});
+
+test('a pitching change replaces the field pitcher without changing the offensive team color', async ({ page }) => {
+  await seekPitch(page, 133);
+  await expect(page.locator('#scoreboard')).toContainText('Top 4th');
+  await expectFieldLabel(page, 'batter', '2', 'rgb(0, 168, 168)');
+  await expectFieldLabel(page, 'fielder-pitcher', '75', 'rgb(255, 255, 255)');
+  await expect(page.locator('#batter')).toHaveClass(/mariner/);
+  await expect(page.locator('#fielder-pitcher')).not.toHaveClass(/mariner/);
 });
 
 test('all player labels remain legible without a horizontal phone-width overflow', async ({ page }) => {
