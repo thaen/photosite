@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#101010">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-    <link rel="stylesheet" href="mariners.css?v=field-10">
+    <link rel="stylesheet" href="mariners.css?v=feed-11">
     <title>Mariners Live Scoresheet | Troubles Roll By</title>
   </head>
   <body>
@@ -31,10 +31,16 @@
         </section>
 
         <section class="live-details" aria-labelledby="pitch-heading">
-          <section aria-labelledby="current-pitch-heading">
-            <h1 id="current-pitch-heading">Current pitch</h1>
-            <p id="current-pitch" class="current-pitch" aria-live="polite"></p>
-          </section>
+          <div class="live-overview">
+            <section aria-labelledby="current-pitch-heading">
+              <h1 id="current-pitch-heading">Current pitch</h1>
+              <p id="current-pitch" class="current-pitch" aria-live="polite"></p>
+            </section>
+            <section id="recent-summary" aria-labelledby="recent-summary-heading">
+              <h1 id="recent-summary-heading">Recent innings</h1>
+              <ul id="recent-innings" class="recent-innings"></ul>
+            </section>
+          </div>
           <section aria-labelledby="zone-heading">
             <h1 id="zone-heading">Pitch zone</h1>
             <svg id="pitch-zone" class="zone-svg" viewBox="0 0 150 150" role="img" aria-label="Pitch zone">
@@ -49,6 +55,7 @@
           </div>
           <p id="message" class="note" aria-live="polite"></p>
           <ol id="pitches" class="panel pitches" aria-live="polite"></ol>
+          <button id="pitch-toggle" type="button" aria-controls="pitches" aria-expanded="false" hidden>Show all pitches</button>
           </section>
         </section>
       </section>
@@ -75,6 +82,6 @@
       <p id="updated" class="note"></p>
       <p class="note">The page checks for updates only while it is visible.</p>
     </main>
-    <script src="mariners.js?v=field-10"></script>
+    <script src="mariners.js?v=feed-11"></script>
   </body>
 </html>

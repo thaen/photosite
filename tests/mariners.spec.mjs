@@ -71,6 +71,30 @@ test('the pitch feed is newest first and retains every pitch after stepping', as
   await expect(page.locator('#pitches .pitch').nth(2)).toHaveText(pitchText(pitches[0]));
 });
 
+test('the pitch feed shows ten recent entries until its history control is expanded', async ({ page }) => {
+  await seekPitch(page, 12);
+  const feed = page.locator('#pitches .pitch');
+  const toggle = page.getByRole('button', { name: 'Show all 12 pitches', exact: true });
+  await expect(feed).toHaveCount(10);
+  await expect(feed.first()).toHaveText(pitchText(pitches[11]));
+  await expect(feed.last()).toHaveText(pitchText(pitches[2]));
+  await toggle.click();
+  await expect(feed).toHaveCount(12);
+  await expect(page.getByRole('button', { name: 'Show recent 10 pitches', exact: true })).toHaveAttribute('aria-expanded', 'true');
+});
+
+test('the upper-right summary reports the two most recent half-innings from recorded play results', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await seekPitch(page, 59);
+  const summary = page.locator('#recent-summary');
+  await expect(summary).toContainText('T2 Seattle Mariners: 5 R, 4 H');
+  await expect(summary).toContainText('B2 Boston Red Sox: 0 R, 1 H');
+  await expect(summary).toContainText('Arozarena Home Run');
+  const boxes = await page.locator('#field, #recent-summary').evaluateAll((nodes) =>
+    nodes.map((node) => node.getBoundingClientRect().toJSON()));
+  expect(boxes[1].left).toBeGreaterThan(boxes[0].right);
+});
+
 test('the step and reset controls move through the cached feed by one pitch and return to pitch one', async ({ page }) => {
   await startReplay(page);
   await page.getByRole('button', { name: 'Step', exact: true }).click();

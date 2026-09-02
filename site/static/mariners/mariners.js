@@ -11,6 +11,7 @@
   };
   let state = { game: null, feed: null, timecode: null, timer: null, seenPitches: new Set() };
   let demo = { active: false, index: 0, timer: null, source: null, pitches: [] };
+  let pitchFeedExpanded = false;
 
   const elements = {
     scoreboard: document.querySelector("#scoreboard"),
@@ -18,6 +19,7 @@
     fieldNote: document.querySelector("#field-note"),
     message: document.querySelector("#message"),
     pitches: document.querySelector("#pitches"),
+    pitchToggle: document.querySelector("#pitch-toggle"),
     refresh: document.querySelector("#refresh"),
     demo: document.querySelector("#demo"),
     demoReset: document.querySelector("#demo-reset"),
@@ -25,6 +27,7 @@
     demoPlay: document.querySelector("#demo-play"),
     updated: document.querySelector("#updated"),
     currentPitch: document.querySelector("#current-pitch"),
+    recentInnings: document.querySelector("#recent-innings"),
     pitchZone: document.querySelector("#pitch-zone"),
     zoneCells: document.querySelector("#zone-cells"),
     boxScore: document.querySelector("#box-score"),
@@ -135,6 +138,7 @@
     }
     demo.active = true;
     demo.index = 0;
+    pitchFeedExpanded = false;
     renderDemo();
   }
 
@@ -278,8 +282,8 @@
     setText("batter", number(offense.batter), offense.batter, true);
     elements.field.setAttribute("aria-label", `Defensive alignment for ${defense.team?.name || "the fielding team"}; batter and runners are shown at the bases.`);
     elements.fieldNote.textContent = demo.active
-      ? "Seattle defenders are teal. The batter and runners are white. The defensive team and pitcher follow this cached pitch."
-      : "Seattle defenders are teal. The batter and runners are white.";
+      ? "Seattle players are teal and Boston players are white. The defensive team and pitcher follow this cached pitch."
+      : "Seattle players are teal and Boston players are white.";
   }
 
   function tableRow(cells, header = false) {
@@ -387,6 +391,7 @@
     elements.currentPitch.textContent = pitch
       ? `Zone ${pitch.pitchData?.zone ?? "-"}: ${pitch.details?.description || "Pitch"}`
       : "No pitch has been recorded.";
+    renderRecentInnings(feed);
     renderBoxScore(feed);
     renderLineup(elements.awayLineup, teams?.away, batter);
     renderLineup(elements.homeLineup, teams?.home, batter);
@@ -401,6 +406,45 @@
       .reverse();
   }
 
+  function completedPlays(feed) {
+    return visiblePlays(feed).filter((play, index, plays) => {
+      if (index < plays.length - 1) return true;
+      const pitches = play.playEvents?.filter((event) => event.isPitch) || [];
+      return pitches.at(-1)?.index === currentPitch(feed)?.index;
+    });
+  }
+
+  function renderRecentInnings(feed) {
+    const teams = feed?.liveData?.boxscore?.teams || {};
+    const hits = new Set(["single", "double", "triple", "home_run"]);
+    const groups = new Map();
+    let awayScore = 0;
+    let homeScore = 0;
+    for (const play of completedPlays(feed)) {
+      const top = play.about?.halfInning === "top";
+      const key = `${top ? "T" : "B"}${play.about?.inning ?? "?"}`;
+      const side = top ? "away" : "home";
+      const group = groups.get(key) || { key, side, runs: 0, hits: 0, results: [] };
+      const result = play.result || {};
+      const nextAway = result.awayScore ?? awayScore;
+      const nextHome = result.homeScore ?? homeScore;
+      group.runs += top ? nextAway - awayScore : nextHome - homeScore;
+      if (hits.has(result.eventType)) group.hits += 1;
+      const lastName = play.matchup?.batter?.fullName?.split(" ").at(-1) || "Batter";
+      group.results.push(`${lastName} ${result.event || "plate appearance"}`);
+      groups.set(key, group);
+      awayScore = nextAway;
+      homeScore = nextHome;
+    }
+    const latest = [...groups.values()].slice(-2).reverse();
+    elements.recentInnings.replaceChildren(...latest.map((group) => {
+      const item = document.createElement("li");
+      const team = teams[group.side]?.team?.name || group.side;
+      item.textContent = `${group.key} ${team}: ${group.runs} R, ${group.hits} H — ${group.results.join("; ")}`;
+      return item;
+    }));
+  }
+
   function renderPitches(feed) {
     const rows = pitchRows(feed);
     const firstRender = state.seenPitches.size === 0;
@@ -408,10 +452,15 @@
     elements.pitches.replaceChildren();
     if (!rows.length) {
       elements.message.textContent = "Pitches will appear when MLB reports them.";
+      elements.pitchToggle.hidden = true;
       return;
     }
-    elements.message.textContent = `${rows.length} pitches. Format: inning, count, mph, type, zone, result, batter versus pitcher.`;
-    for (const { play, event, key } of rows) {
+    const visibleRows = pitchFeedExpanded ? rows : rows.slice(0, 10);
+    elements.message.textContent = `${rows.length} pitches. ${pitchFeedExpanded ? "Showing all pitches." : `Showing the 10 most recent.`} Format: inning, count, mph, type, zone, result, batter versus pitcher.`;
+    elements.pitchToggle.hidden = rows.length <= 10;
+    elements.pitchToggle.textContent = pitchFeedExpanded ? "Show recent 10 pitches" : `Show all ${rows.length} pitches`;
+    elements.pitchToggle.setAttribute("aria-expanded", String(pitchFeedExpanded));
+    for (const { play, event, key } of visibleRows) {
       const details = event.details || {};
       const data = event.pitchData || {};
       const count = event.count || {};
@@ -501,6 +550,10 @@
     } else if (!demo.active) refresh();
   });
   elements.refresh.addEventListener("click", refresh);
+  elements.pitchToggle.addEventListener("click", () => {
+    pitchFeedExpanded = !pitchFeedExpanded;
+    renderPitches(state.feed);
+  });
   elements.demo.addEventListener("click", async () => {
     try {
       await startDemo();

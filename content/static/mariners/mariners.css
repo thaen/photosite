@@ -18,7 +18,10 @@ button:hover, button:focus-visible { color: #101010; background: #ddd; }
 .live-game { display: grid; grid-template-columns: minmax(24rem, .85fr) minmax(28rem, 1.15fr); gap: 1rem; align-items: start; }
 .live-game > section, .live-details { min-width: 0; }
 .live-details > section { margin-bottom: .75rem; }
+.live-overview { display: grid; grid-template-columns: minmax(0, .8fr) minmax(14rem, 1.2fr); gap: 1rem; margin-bottom: .75rem; }
 .current-pitch { margin: .15rem 0 .5rem; line-height: 1.2; }
+.recent-innings { margin: .15rem 0 0; padding: 0; list-style: none; font-size: .82rem; line-height: 1.25; }
+.recent-innings li { padding: .12rem 0; border-bottom: 1px dotted #555; }
 .heading-row { display: flex; justify-content: space-between; align-items: baseline; }
 .summary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: start; margin: .5rem 0 1rem; }
 table { width: 100%; border-collapse: collapse; font: inherit; font-size: .82rem; }
@@ -43,6 +46,7 @@ th { color: #aaa; font-weight: 400; }
 
 @media (max-width: 70rem) {
   .live-game { grid-template-columns: 1fr; }
+  .live-overview { grid-template-columns: 1fr; gap: .35rem; }
   .summary-grid { grid-template-columns: 1fr; }
   .pitches { max-height: none; }
 }
