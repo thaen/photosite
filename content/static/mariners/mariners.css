@@ -19,8 +19,11 @@ button:hover, button:focus-visible { color: #101010; background: #ddd; }
 .columns > section { min-width: 0; }
 .heading-row { display: flex; justify-content: space-between; align-items: baseline; }
 .field-svg { display: block; width: min(100%, 28rem); height: auto; margin: .25rem auto .5rem; overflow: visible; }
-.field-line { fill: none; stroke: #ddd; stroke-width: 1.5; }
-.field-line.faint { stroke: #666; stroke-dasharray: 3 3; }
+.outfield { fill: #171717; }
+.foul-lines, .fence, .infield { fill: none; stroke: #ddd; stroke-width: 1.5; }
+.fence { stroke: #777; stroke-dasharray: 3 3; }
+.infield { fill: #222; }
+.mound { fill: #777; }
 .base rect { fill: #ddd; }
 .fielder text, .runner text { fill: #ddd; font: 700 13px ui-monospace, SFMono-Regular, Menlo, monospace; text-anchor: middle; }
 .runner text { fill: #aaa; font-weight: 400; }

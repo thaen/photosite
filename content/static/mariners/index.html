@@ -22,12 +22,15 @@
       <div class="columns">
         <section aria-labelledby="field-heading">
           <h1 id="field-heading">Field</h1>
-          <svg id="field" class="field-svg" viewBox="0 0 320 300" role="img" aria-label="Live baseball field">
-            <path class="field-line" d="M160 272 L270 162 L160 52 L50 162 Z M160 272 L160 52 M50 162 L270 162" />
-            <path class="field-line faint" d="M50 162 Q160 7 270 162" />
-            <g class="base"><rect x="154" y="46" width="12" height="12" /><rect x="264" y="156" width="12" height="12" /><rect x="154" y="266" width="12" height="12" transform="rotate(45 160 272)" /><rect x="44" y="156" width="12" height="12" /></g>
-            <g class="fielder"><text id="fielder-center" x="160" y="27"></text><text id="fielder-left" x="48" y="78"></text><text id="fielder-right" x="272" y="78"></text><text id="fielder-shortstop" x="110" y="133"></text><text id="fielder-second" x="210" y="133"></text><text id="fielder-third" x="62" y="184"></text><text id="fielder-first" x="258" y="184"></text><text id="fielder-pitcher" x="160" y="183"></text><text id="fielder-catcher" x="160" y="245"></text></g>
-            <g class="runner"><text id="runner-second" x="160" y="39"></text><text id="runner-third" x="23" y="151"></text><text id="runner-first" x="297" y="151"></text><text id="batter" x="160" y="297"></text></g>
+          <svg id="field" class="field-svg" viewBox="0 0 320 320" role="img" aria-label="Live baseball field">
+            <path class="outfield" d="M160 278 L30 148 Q160 7 290 148 Z" />
+            <path class="foul-lines" d="M160 278 L30 148 M160 278 L290 148" />
+            <path class="fence" d="M30 148 Q160 7 290 148" />
+            <path class="infield" d="M160 258 L238 180 L160 102 L82 180 Z" />
+            <circle class="mound" cx="160" cy="180" r="7" />
+            <g class="base"><rect x="154" y="96" width="12" height="12" transform="rotate(45 160 102)" /><rect x="232" y="174" width="12" height="12" transform="rotate(45 238 180)" /><rect x="154" y="252" width="12" height="12" transform="rotate(45 160 258)" /><rect x="76" y="174" width="12" height="12" transform="rotate(45 82 180)" /></g>
+            <g class="fielder"><text id="fielder-center" x="160" y="46"></text><text id="fielder-left" x="67" y="100"></text><text id="fielder-right" x="253" y="100"></text><text id="fielder-shortstop" x="116" y="148"></text><text id="fielder-second" x="204" y="148"></text><text id="fielder-third" x="52" y="202"></text><text id="fielder-first" x="268" y="202"></text><text id="fielder-pitcher" x="160" y="171"></text><text id="fielder-catcher" x="160" y="246"></text></g>
+            <g class="runner"><text id="runner-second" x="160" y="86"></text><text id="runner-third" x="47" y="171"></text><text id="runner-first" x="273" y="171"></text><text id="batter" x="160" y="307"></text></g>
           </svg>
           <p id="field-note" class="note"></p>
         </section>
