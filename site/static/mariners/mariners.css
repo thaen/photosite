@@ -18,7 +18,12 @@ button:hover, button:focus-visible { color: #101010; background: #ddd; }
 .columns { display: grid; grid-template-columns: minmax(20rem, .75fr) minmax(28rem, 1.25fr); gap: 1rem; align-items: start; }
 .columns > section { min-width: 0; }
 .heading-row { display: flex; justify-content: space-between; align-items: baseline; }
-.field { min-height: 21rem; }
+.field-svg { display: block; width: min(100%, 28rem); height: auto; margin: .25rem auto .5rem; overflow: visible; }
+.field-line { fill: none; stroke: #ddd; stroke-width: 1.5; }
+.field-line.faint { stroke: #666; stroke-dasharray: 3 3; }
+.base rect { fill: #ddd; }
+.fielder text, .runner text { fill: #ddd; font: 700 13px ui-monospace, SFMono-Regular, Menlo, monospace; text-anchor: middle; }
+.runner text { fill: #aaa; font-weight: 400; }
 .note { color: #aaa; font-size: .82rem; }
 .controls { font-size: .82rem; }
 .pitches { display: block; max-height: calc(100vh - 15rem); margin: .25rem 0 0; padding: 0; overflow: auto; list-style: none; }

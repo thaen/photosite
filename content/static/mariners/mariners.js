@@ -179,33 +179,31 @@
   function renderField(feed) {
     const linescore = feed?.liveData?.linescore;
     if (!linescore?.defense || !linescore?.offense) {
-      elements.field.textContent = "The defensive alignment will appear when MLB reports it.";
+      for (const id of ["fielder-center", "fielder-left", "fielder-right", "fielder-shortstop", "fielder-second", "fielder-third", "fielder-first", "fielder-pitcher", "fielder-catcher", "runner-second", "runner-third", "runner-first", "batter"]) document.querySelector(`#${id}`).textContent = "";
+      elements.field.setAttribute("aria-label", "The defensive alignment will appear when MLB reports it.");
       elements.fieldNote.textContent = "";
       return;
     }
     const defense = linescore.defense;
     const offense = linescore.offense;
     const directory = playerDirectory(feed);
-    const position = (label, name) => shortToken(label, defense[name], directory);
-    const runner = (label, name) => shortToken(label, offense[name], directory);
-    elements.field.textContent = [
-      "DEFENSE",
-      "                 " + position("CF", "center"),
-      "       " + position("LF", "left") + "              " + position("RF", "right"),
-      "",
-      "             " + position("SS", "shortstop") + "    " + position("2B", "second"),
-      "       " + position("3B", "third") + "          " + position("1B", "first"),
-      "                 " + position("P", "pitcher"),
-      "                 " + position("C", "catcher"),
-      "",
-      "BASES",
-      "                   [2 " + runner("R", "second") + "]",
-      "                  /         \\",
-      "          [3 " + runner("R", "third") + "]             [1 " + runner("R", "first") + "]",
-      "                  \\         /",
-      "                   [H " + shortToken("B", offense.batter, directory) + "]",
-    ].join("\n");
-    elements.fieldNote.textContent = `P1 through RF9 are the defense. The lower diamond shows the batter and occupied bases.`;
+    const number = (person) => person ? directory.get(person.id)?.jerseyNumber || "?" : "-";
+    const setText = (id, text) => { document.querySelector(`#${id}`).textContent = text; };
+    setText("fielder-center", `CF ${number(defense.center)}`);
+    setText("fielder-left", `LF ${number(defense.left)}`);
+    setText("fielder-right", `RF ${number(defense.right)}`);
+    setText("fielder-shortstop", `SS ${number(defense.shortstop)}`);
+    setText("fielder-second", `2B ${number(defense.second)}`);
+    setText("fielder-third", `3B ${number(defense.third)}`);
+    setText("fielder-first", `1B ${number(defense.first)}`);
+    setText("fielder-pitcher", `P ${number(defense.pitcher)}`);
+    setText("fielder-catcher", `C ${number(defense.catcher)}`);
+    setText("runner-second", `R ${number(offense.second)}`);
+    setText("runner-third", `R ${number(offense.third)}`);
+    setText("runner-first", `R ${number(offense.first)}`);
+    setText("batter", `B ${number(offense.batter)}`);
+    elements.field.setAttribute("aria-label", `Defensive alignment for ${defense.team?.name || "the fielding team"}; batter and runners are shown at the bases.`);
+    elements.fieldNote.textContent = `The white labels show defenders. The gray labels show the batter and runners.`;
   }
 
   function pitchRows(feed) {
