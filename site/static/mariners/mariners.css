@@ -20,6 +20,7 @@ button:hover, button:focus-visible { color: #101010; background: #ddd; }
 .heading-row { display: flex; justify-content: space-between; align-items: baseline; }
 .field { min-height: 21rem; }
 .note { color: #aaa; font-size: .82rem; }
+.controls { font-size: .82rem; }
 .pitches { display: block; max-height: calc(100vh - 15rem); margin: .25rem 0 0; padding: 0; overflow: auto; list-style: none; }
 .pitch { padding: .1rem 0; border-bottom: 1px dotted #555; }
 .new { color: #fff; background: #222; }

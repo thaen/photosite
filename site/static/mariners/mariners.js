@@ -6,6 +6,26 @@
   const LIVE_REFRESH_MS = 10_000;
   const SCHEDULE_REFRESH_MS = 120_000;
   let state = { game: null, feed: null, timecode: null, timer: null, seenPitches: new Set() };
+  let demo = { active: false, index: 0, timer: null };
+
+  const DEMO_PLAYERS = [
+    [1, "Logan Gilbert", "36"], [2, "Cal Raleigh", "29"], [3, "Josh Naylor", "12"],
+    [4, "Cole Young", "2"], [5, "Brock Rodden", "90"], [6, "J.P. Crawford", "3"],
+    [7, "Randy Arozarena", "10"], [8, "Julio Rodriguez", "44"], [9, "Dominic Canzone", "8"],
+    [10, "Victor Robles", "?"], [11, "Jorge Polanco", "7"], [12, "Mitch Garver", "18"],
+  ].map(([id, fullName, jerseyNumber]) => ({ id, fullName, jerseyNumber }));
+
+  const DEMO_STATES = [
+    { batter: 7, pitcher: 1, count: [0, 0], outs: 0, bases: [], pitch: ["Called Strike", "FF", 96.2, 7] },
+    { batter: 7, pitcher: 1, count: [1, 1], outs: 0, bases: [], pitch: ["Ball", "SL", 85.4, 14] },
+    { batter: 7, pitcher: 1, count: [1, 2], outs: 0, bases: [7], pitch: ["In play, no out", "CH", 88.1, 5] },
+    { batter: 8, pitcher: 1, count: [0, 1], outs: 0, bases: [7], pitch: ["Foul", "FF", 97.4, 12] },
+    { batter: 8, pitcher: 1, count: [1, 1], outs: 0, bases: [7, 8], pitch: ["In play, no out", "SI", 95.8, 8] },
+    { batter: 9, pitcher: 1, count: [2, 1], outs: 0, bases: [7, 8, 9], pitch: ["Ball", "CH", 86.7, 13] },
+    { batter: 9, pitcher: 1, count: [2, 2], outs: 1, bases: [8, 9], pitch: ["In play, out(s)", "FF", 96.8, 4] },
+    { batter: 12, pitcher: 11, count: [0, 1], outs: 1, bases: [8, 9], pitch: ["Called Strike", "FC", 88.2, 2] },
+    { batter: 12, pitcher: 11, count: [0, 2], outs: 2, bases: [], pitch: ["In play, out(s)", "SI", 94.1, 9] },
+  ];
 
   const elements = {
     scoreboard: document.querySelector("#scoreboard"),
@@ -14,6 +34,10 @@
     message: document.querySelector("#message"),
     pitches: document.querySelector("#pitches"),
     refresh: document.querySelector("#refresh"),
+    demo: document.querySelector("#demo"),
+    demoReset: document.querySelector("#demo-reset"),
+    demoStep: document.querySelector("#demo-step"),
+    demoPlay: document.querySelector("#demo-play"),
     updated: document.querySelector("#updated"),
   };
 
@@ -47,6 +71,68 @@
     const data = await getJson(`/v1/schedule?sportId=1&teamId=${MARINERS_ID}&date=${pacificDate()}`);
     return data.dates?.[0]?.games?.find((game) =>
       game.teams.away.team.id === MARINERS_ID || game.teams.home.team.id === MARINERS_ID);
+  }
+
+  function demoPerson(id) {
+    const player = DEMO_PLAYERS.find((candidate) => candidate.id === id);
+    return { id: player.id, fullName: player.fullName, link: `/demo/people/${id}` };
+  }
+
+  function demoGame(index) {
+    const runs = index >= 7 ? 1 : 0;
+    return {
+      gamePk: "demo", status: { abstractGameState: "Live", detailedState: "Demo: In Progress" },
+      teams: {
+        away: { team: { id: MARINERS_ID, name: "Seattle Mariners" }, score: runs },
+        home: { team: { id: 117, name: "Houston Astros" }, score: 0 },
+      },
+    };
+  }
+
+  function demoFeed(index) {
+    const current = DEMO_STATES[index];
+    const playerEntries = Object.fromEntries(DEMO_PLAYERS.map((player) => [`ID${player.id}`, {
+      person: demoPerson(player.id), jerseyNumber: player.jerseyNumber,
+    }]));
+    const defense = { pitcher: demoPerson(current.pitcher), catcher: demoPerson(2), first: demoPerson(3), second: demoPerson(4), third: demoPerson(5), shortstop: demoPerson(6), left: demoPerson(7), center: demoPerson(8), right: demoPerson(9), team: { name: "Seattle Mariners" } };
+    const basePerson = (base) => current.bases[base] ? demoPerson(current.bases[base]) : undefined;
+    const plays = DEMO_STATES.slice(0, index + 1).map((step, atBatIndex) => ({
+      atBatIndex, about: { halfInning: "top", inning: 7 },
+      matchup: { batter: demoPerson(step.batter), pitcher: demoPerson(step.pitcher) },
+      playEvents: [{ index: atBatIndex, isPitch: true, count: { balls: step.count[0], strikes: step.count[1] }, details: { description: step.pitch[0], type: { code: step.pitch[1] } }, pitchData: { startSpeed: step.pitch[2], zone: step.pitch[3] } }],
+    }));
+    return {
+      gameData: { status: { detailedState: "Demo: In Progress" }, teams: { away: { abbreviation: "SEA" }, home: { abbreviation: "HOU" } } },
+      liveData: {
+        boxscore: { teams: { away: { players: playerEntries }, home: { players: {} } } },
+        linescore: {
+          inningState: "Top", currentInningOrdinal: "7th", balls: current.count[0], strikes: current.count[1], outs: current.outs,
+          defense, offense: { batter: demoPerson(current.batter), first: basePerson(0), second: basePerson(1), third: basePerson(2), team: { name: "Seattle Mariners" } },
+        },
+        plays: { allPlays: plays },
+      },
+    };
+  }
+
+  function stopDemoPlayback() {
+    if (demo.timer) window.clearInterval(demo.timer);
+    demo.timer = null;
+  }
+
+  function renderDemo() {
+    clearTimer();
+    demo.active = true;
+    state = { game: demoGame(demo.index), feed: demoFeed(demo.index), timecode: null, timer: null, seenPitches: new Set() };
+    renderScoreboard(state.game, state.feed);
+    renderField(state.feed);
+    renderPitches(state.feed);
+    elements.updated.textContent = `Demo play ${demo.index + 1} of ${DEMO_STATES.length}.`;
+  }
+
+  function stepDemo() {
+    if (!demo.active) demo.index = 0;
+    else demo.index = Math.min(demo.index + 1, DEMO_STATES.length - 1);
+    renderDemo();
   }
 
   function line(text, width = 42) {
@@ -103,17 +189,23 @@
     const position = (label, name) => shortToken(label, defense[name], directory);
     const runner = (label, name) => shortToken(label, offense[name], directory);
     elements.field.textContent = [
-      "             " + position("CF", "center"),
-      "      " + position("LF", "left") + "              " + position("RF", "right"),
+      "DEFENSE",
+      "                 " + position("CF", "center"),
+      "       " + position("LF", "left") + "              " + position("RF", "right"),
       "",
-      "           " + position("SS", "shortstop") + "    " + position("2B", "second"),
-      "      " + position("3B", "third") + "    .-" + runner("R2", "second") + "-.    " + position("1B", "first"),
-      "                   /       \\",
-      "          " + runner("R3", "third") + "  / " + position("P", "pitcher") + "  \\  " + runner("R1", "first"),
-      "                 /  " + position("C", "catcher") + "   \\",
-      "                 '---" + shortToken("B", offense.batter, directory) + "---'",
+      "             " + position("SS", "shortstop") + "    " + position("2B", "second"),
+      "       " + position("3B", "third") + "          " + position("1B", "first"),
+      "                 " + position("P", "pitcher"),
+      "                 " + position("C", "catcher"),
+      "",
+      "BASES",
+      "                   [2 " + runner("R", "second") + "]",
+      "                  /         \\",
+      "          [3 " + runner("R", "third") + "]             [1 " + runner("R", "first") + "]",
+      "                  \\         /",
+      "                   [H " + shortToken("B", offense.batter, directory) + "]",
     ].join("\n");
-    elements.fieldNote.textContent = `B = batter. R1, R2, and R3 = runners. Defense: ${defense.team?.name || "unknown"}.`;
+    elements.fieldNote.textContent = `P1 through RF9 are the defense. The lower diamond shows the batter and occupied bases.`;
   }
 
   function pitchRows(feed) {
@@ -189,6 +281,10 @@
 
   async function refresh() {
     clearTimer();
+    if (demo.active) {
+      renderDemo();
+      return;
+    }
     if (document.hidden) return;
     try {
       const game = await findGame();
@@ -207,7 +303,38 @@
     }
   }
 
-  document.addEventListener("visibilitychange", () => document.hidden ? clearTimer() : refresh());
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      clearTimer();
+      stopDemoPlayback();
+    } else if (!demo.active) refresh();
+  });
   elements.refresh.addEventListener("click", refresh);
+  elements.demo.addEventListener("click", () => {
+    stopDemoPlayback();
+    demo = { active: true, index: 0, timer: null };
+    renderDemo();
+  });
+  elements.demoReset.addEventListener("click", () => {
+    stopDemoPlayback();
+    demo = { active: true, index: 0, timer: null };
+    renderDemo();
+  });
+  elements.demoStep.addEventListener("click", () => {
+    stopDemoPlayback();
+    stepDemo();
+  });
+  elements.demoPlay.addEventListener("click", () => {
+    if (!demo.active || demo.index === DEMO_STATES.length - 1) demo = { active: true, index: 0, timer: null };
+    stopDemoPlayback();
+    renderDemo();
+    demo.timer = window.setInterval(() => {
+      if (demo.index === DEMO_STATES.length - 1) {
+        stopDemoPlayback();
+        return;
+      }
+      stepDemo();
+    }, 900);
+  });
   refresh();
 })();
