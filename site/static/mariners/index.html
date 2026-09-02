@@ -19,6 +19,19 @@
         <button id="demo-play" type="button">Play</button>
       </p>
 
+      <div class="summary-grid">
+        <section aria-labelledby="line-score-heading">
+          <h1 id="line-score-heading">Line score</h1>
+          <table id="line-score" aria-label="Line score"></table>
+        </section>
+        <section aria-labelledby="zone-heading">
+          <h1 id="zone-heading">Pitch zone</h1>
+          <svg id="pitch-zone" class="zone-svg" viewBox="0 0 150 150" role="img" aria-label="Pitch zone">
+            <g id="zone-cells"></g>
+          </svg>
+        </section>
+      </div>
+
       <div class="columns">
         <section aria-labelledby="field-heading">
           <h1 id="field-heading">Field</h1>
@@ -39,6 +52,25 @@
           <ol id="pitches" class="panel pitches" aria-live="polite"></ol>
         </section>
       </div>
+
+      <section aria-labelledby="box-score-heading">
+        <h1 id="box-score-heading">Box score</h1>
+        <table id="box-score" aria-label="Box score"></table>
+      </section>
+      <div class="summary-grid">
+        <section aria-labelledby="away-lineup-heading">
+          <h1 id="away-lineup-heading">Seattle batting order</h1>
+          <table id="away-lineup" aria-label="Seattle batting order"></table>
+        </section>
+        <section aria-labelledby="home-lineup-heading">
+          <h1 id="home-lineup-heading">Boston batting order</h1>
+          <table id="home-lineup" aria-label="Boston batting order"></table>
+        </section>
+      </div>
+      <section aria-labelledby="directory-heading">
+        <h1 id="directory-heading">Players and positions</h1>
+        <table id="player-directory" aria-label="Players and positions"></table>
+      </section>
 
       <p id="updated" class="note"></p>
       <p class="note">The page checks for updates only while it is visible.</p>

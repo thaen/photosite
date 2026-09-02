@@ -20,6 +20,13 @@
     demoStep: document.querySelector("#demo-step"),
     demoPlay: document.querySelector("#demo-play"),
     updated: document.querySelector("#updated"),
+    lineScore: document.querySelector("#line-score"),
+    pitchZone: document.querySelector("#pitch-zone"),
+    zoneCells: document.querySelector("#zone-cells"),
+    boxScore: document.querySelector("#box-score"),
+    awayLineup: document.querySelector("#away-lineup"),
+    homeLineup: document.querySelector("#home-lineup"),
+    playerDirectory: document.querySelector("#player-directory"),
   };
 
   function pacificDate() {
@@ -135,6 +142,7 @@
     renderScoreboard(state.game, state.feed);
     renderField(state.feed);
     renderPitches(state.feed);
+    renderScoresheet(state.game, state.feed);
     elements.updated.textContent = `Cached MLB pitch ${demo.index + 1} of ${demo.pitches.length}.`;
   }
 
@@ -176,6 +184,40 @@
       .reduce((directory, player) => directory.set(player.person.id, player), new Map());
   }
 
+  function currentPlay(feed) {
+    return feed?.liveData?.plays?.allPlays?.at(-1) || null;
+  }
+
+  function currentPitch(feed) {
+    return currentPlay(feed)?.playEvents?.filter((event) => event.isPitch).at(-1) || null;
+  }
+
+  function teamForHalf(feed, halfInning) {
+    const side = halfInning === "top" ? "home" : "away";
+    return feed?.liveData?.boxscore?.teams?.[side] || null;
+  }
+
+  function playerAtPosition(team, position) {
+    return Object.values(team?.players || []).find((player) => player.position?.abbreviation === position)?.person || null;
+  }
+
+  function defenseForPlay(feed) {
+    const play = currentPlay(feed);
+    const team = teamForHalf(feed, play?.about?.halfInning);
+    return {
+      team: team?.team,
+      center: playerAtPosition(team, "CF"),
+      left: playerAtPosition(team, "LF"),
+      right: playerAtPosition(team, "RF"),
+      shortstop: playerAtPosition(team, "SS"),
+      second: playerAtPosition(team, "2B"),
+      third: playerAtPosition(team, "3B"),
+      first: playerAtPosition(team, "1B"),
+      pitcher: play?.matchup?.pitcher || playerAtPosition(team, "P"),
+      catcher: playerAtPosition(team, "C"),
+    };
+  }
+
   function token(label, person, directory) {
     const number = person ? directory.get(person.id)?.jerseyNumber || "?" : "-";
     return `${label}${number}`.padEnd(8);
@@ -193,7 +235,7 @@
       elements.fieldNote.textContent = "";
       return;
     }
-    const defense = linescore.defense;
+    const defense = defenseForPlay(feed);
     const offense = linescore.offense;
     const directory = playerDirectory(feed);
     const mariners = new Set(Object.values(feed.liveData?.boxscore?.teams || {})
@@ -220,8 +262,119 @@
     setText("batter", `B ${number(offense.batter)}`, offense.batter);
     elements.field.setAttribute("aria-label", `Defensive alignment for ${defense.team?.name || "the fielding team"}; batter and runners are shown at the bases.`);
     elements.fieldNote.textContent = demo.active
-      ? "Seattle defenders are teal. The batter and runners are white. The defense is the final alignment in this cached game."
+      ? "Seattle defenders are teal. The batter and runners are white. The defensive team and pitcher follow this cached pitch."
       : "Seattle defenders are teal. The batter and runners are white.";
+  }
+
+  function tableRow(cells, header = false) {
+    const row = document.createElement("tr");
+    for (const value of cells) {
+      const cell = document.createElement(header ? "th" : "td");
+      cell.textContent = value;
+      row.append(cell);
+    }
+    return row;
+  }
+
+  function fillTable(table, headers, rows) {
+    table.replaceChildren(tableRow(headers, true), ...rows.map((row) => tableRow(row)));
+  }
+
+  function visiblePlays(feed) {
+    return feed?.liveData?.plays?.allPlays || [];
+  }
+
+  function teamTotals(feed, side, game) {
+    const hitTypes = new Set(["single", "double", "triple", "home_run"]);
+    const plays = visiblePlays(feed);
+    const score = game?.teams?.[side]?.score ?? 0;
+    const isAway = side === "away";
+    const hits = plays.filter((play) => hitTypes.has(play.result?.eventType)
+      && (isAway ? play.matchup?.batter?.id !== undefined && play.about?.isTopInning : !play.about?.isTopInning)).length;
+    const errors = plays.filter((play) => play.result?.eventType === "error"
+      && (isAway ? !play.about?.isTopInning : play.about?.isTopInning)).length;
+    return { score, hits, errors };
+  }
+
+  function renderLineScore(game, feed) {
+    if (!game || !feed) {
+      elements.lineScore.replaceChildren();
+      return;
+    }
+    const away = teamTotals(feed, "away", game);
+    const home = teamTotals(feed, "home", game);
+    fillTable(elements.lineScore, ["Team", "R", "H", "E"], [
+      [game.teams.away.team.name, away.score, away.hits, away.errors],
+      [game.teams.home.team.name, home.score, home.hits, home.errors],
+    ]);
+  }
+
+  function renderPitchZone(feed) {
+    const current = currentPitch(feed)?.pitchData?.zone;
+    elements.zoneCells.replaceChildren();
+    for (let zone = 1; zone <= 14; zone += 1) {
+      const index = zone - 1;
+      const cell = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      cell.setAttribute("class", "zone-cell");
+      cell.setAttribute("data-zone", zone);
+      cell.setAttribute("data-current", String(zone === current));
+      cell.setAttribute("x", 10 + (index % 3) * 44);
+      cell.setAttribute("y", 10 + Math.floor(index / 3) * 28);
+      cell.setAttribute("width", 40);
+      cell.setAttribute("height", 24);
+      elements.zoneCells.append(cell);
+      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      label.setAttribute("x", 30 + (index % 3) * 44);
+      label.setAttribute("y", 27 + Math.floor(index / 3) * 28);
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("fill", "#fff");
+      label.setAttribute("font-size", "12");
+      label.textContent = zone;
+      elements.zoneCells.append(label);
+    }
+    elements.pitchZone.setAttribute("aria-label", `Pitch zone${current ? `; zone ${current} is current` : ""}`);
+  }
+
+  function renderLineup(table, team) {
+    const players = team?.batters?.map((id) => team.players[`ID${id}`]).filter(Boolean) || [];
+    fillTable(table, ["#", "Player", "No.", "Pos."], players.map((player, index) => [
+      index + 1, player.person.fullName, player.jerseyNumber || "-", player.position?.abbreviation || "-",
+    ]));
+  }
+
+  function renderBoxScore(feed) {
+    const teams = feed?.liveData?.boxscore?.teams;
+    if (!teams) {
+      elements.boxScore.replaceChildren();
+      return;
+    }
+    const rows = ["away", "home"].flatMap((side) => Object.values(teams[side].players)
+      .filter((player) => player.stats?.batting?.plateAppearances)
+      .slice(0, 9)
+      .map((player) => [teams[side].team.name, player.person.fullName, player.stats.batting.atBats || 0, player.stats.batting.hits || 0, player.stats.batting.runs || 0, player.stats.batting.rbi || 0]));
+    fillTable(elements.boxScore, ["Team", "Player", "AB", "H", "R", "RBI"], rows);
+  }
+
+  function renderPlayerDirectory(feed) {
+    const teams = feed?.liveData?.boxscore?.teams;
+    if (!teams) {
+      elements.playerDirectory.replaceChildren();
+      return;
+    }
+    const rows = ["away", "home"].flatMap((side) => Object.values(teams[side].players)
+      .filter((player) => player.position?.abbreviation && player.position.abbreviation !== "Bench")
+      .map((player) => [teams[side].team.name, player.person.fullName, player.jerseyNumber || "-", player.position.abbreviation]));
+    fillTable(elements.playerDirectory, ["Team", "Player", "No.", "Pos."], rows);
+  }
+
+  function renderScoresheet(game, feed) {
+    renderLineScore(game, feed);
+    renderPitchZone(feed);
+    const teams = feed?.liveData?.boxscore?.teams;
+    renderBoxScore(feed);
+    renderLineup(elements.awayLineup, teams?.away);
+    renderLineup(elements.homeLineup, teams?.home);
+    renderPlayerDirectory(feed);
   }
 
   function pitchRows(feed) {
@@ -316,6 +469,7 @@
       renderField(state.feed);
       if (state.feed) renderPitches(state.feed);
       else elements.pitches.replaceChildren();
+      renderScoresheet(game, state.feed);
       elements.updated.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" })}.`;
       scheduleNext(game && isLive(game) ? LIVE_REFRESH_MS : SCHEDULE_REFRESH_MS);
     } catch (error) {

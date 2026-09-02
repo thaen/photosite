@@ -18,6 +18,13 @@ button:hover, button:focus-visible { color: #101010; background: #ddd; }
 .columns { display: grid; grid-template-columns: minmax(20rem, .75fr) minmax(28rem, 1.25fr); gap: 1rem; align-items: start; }
 .columns > section { min-width: 0; }
 .heading-row { display: flex; justify-content: space-between; align-items: baseline; }
+.summary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: start; margin: .5rem 0 1rem; }
+table { width: 100%; border-collapse: collapse; font: inherit; font-size: .82rem; }
+th, td { padding: .1rem .3rem; border: 1px dotted #555; text-align: left; }
+th { color: #aaa; font-weight: 400; }
+.zone-svg { display: block; width: min(100%, 10rem); height: auto; }
+.zone-cell { fill: #202020; stroke: #aaa; stroke-width: 1; }
+.zone-cell[data-current="true"] { fill: #00a8a8; stroke: #fff; stroke-width: 2; }
 .field-svg { display: block; width: min(100%, 28rem); height: auto; margin: .25rem auto .5rem; overflow: visible; }
 .field-base { pointer-events: none; }
 .fielder text, .runner text { fill: #fff; font: 700 30px ui-monospace, SFMono-Regular, Menlo, monospace; text-anchor: middle; stroke: #101010; stroke-linejoin: round; stroke-width: 4px; paint-order: stroke fill; }
@@ -31,5 +38,6 @@ button:hover, button:focus-visible { color: #101010; background: #ddd; }
 
 @media (max-width: 70rem) {
   .columns { grid-template-columns: 1fr; }
+  .summary-grid { grid-template-columns: 1fr; }
   .pitches { max-height: none; }
 }
