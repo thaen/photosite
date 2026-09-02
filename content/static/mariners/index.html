@@ -3,39 +3,35 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0c2c56">
+    <meta name="theme-color" content="#101010">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <link rel="stylesheet" href="mariners.css">
-    <title>Mariners Pitches | Troubles Roll By</title>
+    <title>Mariners Live Scoresheet | Troubles Roll By</title>
   </head>
   <body>
     <main>
-      <a class="back" href="/static/games.html">← Games</a>
-      <header>
-        <p class="eyebrow">Seattle Mariners</p>
-        <h1>Pitch feed</h1>
-        <p class="subhead">A small live feed for the pitches that matter.</p>
-      </header>
+      <p><a href="/static/games.html">&lt; Games</a> | Seattle Mariners live scoresheet</p>
+      <pre id="scoreboard" class="panel" aria-live="polite">Loading Seattle's game...</pre>
 
-      <section class="game" aria-labelledby="game-title">
-        <div class="game-topline">
-          <p id="game-title" class="status" aria-live="polite">Finding today’s game…</p>
-          <p id="updated" class="updated"></p>
-        </div>
-        <p id="score" class="score" aria-live="polite"></p>
-        <p id="detail" class="detail"></p>
-      </section>
+      <div class="columns">
+        <section aria-labelledby="field-heading">
+          <h1 id="field-heading">Field</h1>
+          <pre id="field" class="panel field" aria-live="polite"></pre>
+          <p id="field-note" class="note"></p>
+        </section>
 
-      <section class="feed-section" aria-labelledby="feed-title">
-        <div class="feed-heading">
-          <h2 id="feed-title">Pitches</h2>
-          <button id="refresh" type="button">Refresh</button>
-        </div>
-        <p id="message" class="message" aria-live="polite"></p>
-        <ol id="pitches" class="pitches" aria-live="polite"></ol>
-      </section>
+        <section aria-labelledby="pitch-heading">
+          <div class="heading-row">
+            <h1 id="pitch-heading">Pitch-by-pitch</h1>
+            <button id="refresh" type="button">Refresh</button>
+          </div>
+          <p id="message" class="note" aria-live="polite"></p>
+          <ol id="pitches" class="panel pitches" aria-live="polite"></ol>
+        </section>
+      </div>
 
-      <footer>The page checks for updates only while it is visible.</footer>
+      <p id="updated" class="note"></p>
+      <p class="note">The page checks for updates only while it is visible.</p>
     </main>
     <script src="mariners.js"></script>
   </body>

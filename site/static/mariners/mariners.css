@@ -1,41 +1,30 @@
 :root {
-  color-scheme: light;
+  color-scheme: dark;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  color: #eaf5ff;
-  background: #07192f;
+  font-size: 14px;
+  color: #ddd;
+  background: #101010;
 }
 
 * { box-sizing: border-box; }
+body { margin: 0; background: #101010; }
+main { width: min(100% - 1rem, 96rem); margin: 0 auto; padding: .5rem 0 2rem; }
+a { color: #ddd; }
+h1 { margin: 0 0 .25rem; font: inherit; font-weight: 700; font-size: 1rem; }
+p { margin: .35rem 0; }
+button { padding: 0 .35rem; border: 1px solid #aaa; color: #ddd; background: transparent; font: inherit; cursor: pointer; }
+button:hover, button:focus-visible { color: #101010; background: #ddd; }
+.panel { margin: .25rem 0 1rem; overflow-x: auto; white-space: pre; font: inherit; line-height: 1.15; }
+.columns { display: grid; grid-template-columns: minmax(20rem, .75fr) minmax(28rem, 1.25fr); gap: 1rem; align-items: start; }
+.columns > section { min-width: 0; }
+.heading-row { display: flex; justify-content: space-between; align-items: baseline; }
+.field { min-height: 21rem; }
+.note { color: #aaa; font-size: .82rem; }
+.pitches { display: block; max-height: calc(100vh - 15rem); margin: .25rem 0 0; padding: 0; overflow: auto; list-style: none; }
+.pitch { padding: .1rem 0; border-bottom: 1px dotted #555; }
+.new { color: #fff; background: #222; }
 
-body { margin: 0; min-width: 20rem; background: #07192f; }
-
-main { width: min(100% - 2rem, 43rem); margin: 0 auto; padding: 1.25rem 0 3rem; }
-
-.back, button { color: #9ee7d7; font: inherit; }
-.back { display: inline-block; margin-bottom: 2.5rem; }
-
-header { border-left: .35rem solid #00a4e4; padding-left: 1rem; }
-.eyebrow { margin: 0; color: #9ee7d7; font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-h1 { margin: .2rem 0; font-size: clamp(2.3rem, 10vw, 4.4rem); letter-spacing: -.1em; line-height: 1; }
-.subhead { margin: .65rem 0 0; color: #b7c9db; font-family: system-ui, sans-serif; }
-
-.game { margin-top: 2rem; padding: 1rem; border: 1px solid #31516f; border-radius: .5rem; background: #0c2c56; }
-.game-topline, .feed-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.status { margin: 0; color: #9ee7d7; font-weight: 700; }
-.updated, .detail, .message, footer { color: #b7c9db; font-size: .8rem; }
-.updated, .detail { margin: 0; text-align: right; }
-.score { margin: .7rem 0 .25rem; font-size: clamp(1.35rem, 6vw, 2rem); font-weight: 700; }
-
-.feed-section { margin-top: 2.25rem; }
-h2 { margin: 0; font-size: 1.2rem; }
-button { padding: .45rem .7rem; border: 1px solid #9ee7d7; border-radius: .3rem; background: transparent; cursor: pointer; }
-button:hover, button:focus-visible { color: #07192f; background: #9ee7d7; }
-.message { min-height: 1.2rem; margin: 1rem 0; }
-.pitches { display: grid; gap: .55rem; margin: 0; padding: 0; list-style: none; }
-.pitch { padding: .8rem; border-left: .25rem solid #00a4e4; background: #102b49; }
-.pitch-main { display: flex; flex-wrap: wrap; gap: .35rem .7rem; align-items: baseline; font-size: .92rem; }
-.pitch-call { color: #9ee7d7; font-weight: 700; }
-.pitch-meta { margin-top: .35rem; color: #b7c9db; font-size: .77rem; }
-footer { margin-top: 2.5rem; line-height: 1.5; }
-
-@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+@media (max-width: 70rem) {
+  .columns { grid-template-columns: 1fr; }
+  .pitches { max-height: none; }
+}
