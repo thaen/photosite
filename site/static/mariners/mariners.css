@@ -20,7 +20,7 @@ button:hover, button:focus-visible { color: #101010; background: #ddd; }
 .heading-row { display: flex; justify-content: space-between; align-items: baseline; }
 .field-svg { display: block; width: min(100%, 28rem); height: auto; margin: .25rem auto .5rem; overflow: visible; }
 .field-base { pointer-events: none; }
-.fielder text, .runner text { fill: #fff; font: 700 20px ui-monospace, SFMono-Regular, Menlo, monospace; text-anchor: middle; stroke: #101010; stroke-linejoin: round; stroke-width: 3px; paint-order: stroke fill; }
+.fielder text, .runner text { fill: #fff; font: 700 20px ui-monospace, SFMono-Regular, Menlo, monospace; text-anchor: middle; stroke: #101010; stroke-linejoin: round; stroke-width: 4px; paint-order: stroke fill; }
 .fielder text.mariner, .runner text.mariner { fill: #00a8a8; }
 .runner text { fill: #fff; font-weight: 400; }
 .note { color: #aaa; font-size: .82rem; }
