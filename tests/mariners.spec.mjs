@@ -104,6 +104,17 @@ test('the batter stays white when Seattle is batting', async ({ page }) => {
   await expect(page.locator('#batter')).not.toHaveClass(/mariner/);
 });
 
+test('the batter stays white through every cached pitch', async ({ page }) => {
+  await startReplay(page);
+  const step = page.getByRole('button', { name: 'Step', exact: true });
+  for (let index = 1; index < pitches.length; index += 1) {
+    await step.evaluate((button) => button.click());
+    const batter = page.locator('#batter');
+    await expect(batter).not.toHaveClass(/mariner/);
+    await expect(batter).toHaveCSS('fill', 'rgb(255, 255, 255)');
+  }
+});
+
 test('the field changes both teams, player numbers, and colors at the first half-inning change', async ({ page }) => {
   await seekPitch(page, 12);
   await expect(page.locator('#scoreboard')).toContainText('Bottom 1st');
