@@ -83,13 +83,14 @@ test('the pitch feed shows ten recent entries until its history control is expan
   await expect(page.getByRole('button', { name: 'Show recent 10 pitches', exact: true })).toHaveAttribute('aria-expanded', 'true');
 });
 
-test('the upper-right summary reports the two most recent half-innings from recorded play results', async ({ page }) => {
+test('the upper-right summary uses MLB inning groups and recorded plate-appearance descriptions', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await seekPitch(page, 59);
   const summary = page.locator('#recent-summary');
-  await expect(summary).toContainText('T2 Seattle Mariners: 5 R, 4 H');
-  await expect(summary).toContainText('B2 Boston Red Sox: 0 R, 1 H');
-  await expect(summary).toContainText('Arozarena Home Run');
+  await expect(summary).toContainText('T2 Seattle Mariners');
+  await expect(summary).toContainText('Josh Naylor doubles (19) on a sharp fly ball to right fielder Roman Anthony.');
+  await expect(summary).toContainText('B2 Boston Red Sox');
+  await expect(summary).toContainText('Nick Sogard singles on a ground ball to right fielder Dominic Canzone.');
   const boxes = await page.locator('#field, #recent-summary').evaluateAll((nodes) =>
     nodes.map((node) => node.getBoundingClientRect().toJSON()));
   expect(boxes[1].left).toBeGreaterThan(boxes[0].right);

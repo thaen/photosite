@@ -416,31 +416,17 @@
 
   function renderRecentInnings(feed) {
     const teams = feed?.liveData?.boxscore?.teams || {};
-    const hits = new Set(["single", "double", "triple", "home_run"]);
-    const groups = new Map();
-    let awayScore = 0;
-    let homeScore = 0;
-    for (const play of completedPlays(feed)) {
-      const top = play.about?.halfInning === "top";
-      const key = `${top ? "T" : "B"}${play.about?.inning ?? "?"}`;
-      const side = top ? "away" : "home";
-      const group = groups.get(key) || { key, side, runs: 0, hits: 0, results: [] };
-      const result = play.result || {};
-      const nextAway = result.awayScore ?? awayScore;
-      const nextHome = result.homeScore ?? homeScore;
-      group.runs += top ? nextAway - awayScore : nextHome - homeScore;
-      if (hits.has(result.eventType)) group.hits += 1;
-      const lastName = play.matchup?.batter?.fullName?.split(" ").at(-1) || "Batter";
-      group.results.push(`${lastName} ${result.event || "plate appearance"}`);
-      groups.set(key, group);
-      awayScore = nextAway;
-      homeScore = nextHome;
-    }
-    const latest = [...groups.values()].slice(-2).reverse();
+    const playsByIndex = new Map(completedPlays(feed).map((play) => [play.about?.atBatIndex, play]));
+    const innings = feed?.liveData?.plays?.playsByInning || [];
+    const latest = innings.flatMap((inning, index) => ["top", "bottom"].map((half) => {
+      const plays = (inning[half] || []).map((atBatIndex) => playsByIndex.get(atBatIndex)).filter(Boolean);
+      if (!plays.length) return null;
+      return { key: `${half === "top" ? "T" : "B"}${index + 1}`, side: half === "top" ? "away" : "home", plays };
+    })).filter(Boolean).slice(-2).reverse();
     elements.recentInnings.replaceChildren(...latest.map((group) => {
       const item = document.createElement("li");
       const team = teams[group.side]?.team?.name || group.side;
-      item.textContent = `${group.key} ${team}: ${group.runs} R, ${group.hits} H — ${group.results.join("; ")}`;
+      item.textContent = `${group.key} ${team} — ${group.plays.map((play) => play.result?.description || play.result?.event || "Plate appearance").join("; ")}`;
       return item;
     }));
   }
