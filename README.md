@@ -1,5 +1,8 @@
 # Photo Site Builder
 
+Troubles Roll By's gallery bug button queues contextual background fixes through
+the home Mac. Connect Tailscale to file/read reports. See [family reports](docs/family-reports.md).
+
 A simple and efficient static site generator for photo galleries using Python.
 
 ## Features
