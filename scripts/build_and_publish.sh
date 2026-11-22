@@ -28,8 +28,4 @@ if [[ ${PHOTOSITE_RELEASE_DRY_RUN:-0} == 1 ]]; then
 fi
 
 python3 scripts/upload_doit_targets.py "${upload_args[@]}"
-if [[ ! -s "$pending_list" ]]; then
-    printf 'The upload queue is complete.\n'
-else
-    printf 'The upload queue still has queued files.\n'
-fi
+printf 'The upload queue is complete.\n'

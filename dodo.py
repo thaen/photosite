@@ -19,7 +19,10 @@ file as small as possible.
 import calendar
 from datetime import datetime
 from glob import glob
+import json
 import os
+from pathlib import Path
+from shutil import copyfile
 import subprocess
 import sys
 
@@ -59,31 +62,41 @@ def _thumbpath(original):
 def dirsonly(L):
     return filter(lambda i: os.path.isdir(i), L)
 
+def gallery_dirs():
+    selected = os.environ.get('PHOTOSITE_CHANGED_GALLERIES')
+    names = set(json.loads(selected)) if selected is not None else None
+    return [path for path in sorted(dirsonly(glob('content/galleries/*')))
+            if names is None or os.path.basename(path) in names]
+
+def gallery_photos(galdir):
+    return sorted(path for path in glob(os.path.join(galdir, '*.jpg')) if os.path.isfile(path))
+
+def _make_thumbnail(original, target):
+    subprocess.run(['magick', original, '-geometry', 'x250', target], check=True)
+
 def task_larges():
     '''
     Copy original photos into the corresponding directory in the site/.
     '''
-    for original in glob('content/galleries/*/*jpg'):
+    for original in (photo for folder in gallery_dirs() for photo in gallery_photos(folder)):
         largepath = _largepath(original)
         yield {
             'name': largepath,
             'file_dep': [original],
             'targets': [largepath],
-            'actions': [_mkdir, "cp '{}' '{}'".format(original, largepath)]}
+            'actions': [_mkdir, (copyfile, [original, largepath])]}
 
 def task_thumbs():
     '''
     Create thumbnails from originals in the corresponding thumbnail directory.
     '''
-    for original in glob('content/galleries/*/*jpg'):
+    for original in (photo for folder in gallery_dirs() for photo in gallery_photos(folder)):
         thumbpath = _thumbpath(original)
         yield {
             'name': thumbpath,
             'file_dep': [original],
             'targets': [thumbpath],
-            'actions': [
-                _mkdir,
-                "magick '{}' -geometry x250 '{}'".format(original, thumbpath)]}
+            'actions': [_mkdir, (_make_thumbnail, [original, thumbpath])]}
 
 def task_create_orderfiles_dir():
     '''Create the orderfiles directory.'''
@@ -98,10 +111,10 @@ def task_orderfiles():
     which are the file names sorted by capture time, and the x/y
     dimenions of the thumbnails.
     '''
-    for galdir in dirsonly(glob('content/galleries/*')):
+    for galdir in gallery_dirs():
         galname = os.path.basename(galdir)
         orderfile = os.path.join(ORDERFILE_LOCATION, '{}_order.txt'.format(galname))
-        deps = glob(os.path.join(galdir, '*'))
+        deps = gallery_photos(galdir)
         reverse = False
         if galname == 'photostream':
             reverse = True
@@ -117,6 +130,8 @@ def task_photostream_glom_orderfile():
         'name': 'photostream_glom_order.txt',
         'targets': [ORDERFILE_LOCATION + '/photostream_glom_order.txt'],
         'task_dep': ['orderfiles'],
+        'file_dep': [os.path.join(ORDERFILE_LOCATION, os.path.basename(folder) + '_order.txt')
+                     for folder in sorted(dirsonly(glob('content/galleries/*')))],
         'actions': [make_photostream_glom_orderfile] }
         
 @create_after(executed='orderfiles')
@@ -124,7 +139,7 @@ def task_gallery_html():
     '''
     Generate HTML for directories in galleries/.
     '''
-    for galdir in dirsonly(glob('content/galleries/*')):
+    for galdir in gallery_dirs():
         # we need the image files to exist, and the order files to exist.
         galname = os.path.basename(galdir)
         targetdir = _sitepath(galdir)
@@ -196,7 +211,7 @@ def task_homepage():
     Generate the homepage HTML.
     '''
     return {
-        'task_dep': ['gallery_html'],
+        'task_dep': ['gallery_html', 'photostream_glom_orderfile'],
         'file_dep': [ORDERFILE_LOCATION + '/photostream_glom_order.txt'] + glob('templates/*') + glob('content/galleries/*order.txt'),
         'targets': ['site/index.html'],
         'actions': [make_index_html]}
@@ -339,44 +354,34 @@ def make_stream_html(orderfile, target, galname):
                                                   galname=galname,
                                                   groups=_get_photo_groups(orderfile))
     
-    with open(os.path.join(target), 'w') as fh:
-        fh.write(output_from_parsed_template)
+    _write_if_changed(output_from_parsed_template, target)
 
 def make_swipe_html(orderfile, swipetarget, galname):
     template = jenv.get_template('swipegallery.html.tmpl')
     output_from_parsed_template = template.render(title=galname,
                                                   galname=galname,
                                                   groups=_get_photo_groups(orderfile))
-    with open(os.path.join(swipetarget), 'w') as fh:
-        fh.write(output_from_parsed_template)
+    _write_if_changed(output_from_parsed_template, swipetarget)
 
 # *******************************************
 # make the order files
 
 def make_order_file(galdir, reverse, dependencies, targets):
-    # dependencies is only a list of files that are updated, not all the files. grab all the files.
-    ORDER_FILE = targets[0]
-    
-    existing_order = []
-    if os.path.exists(ORDER_FILE):
-        with open(ORDER_FILE) as orderfile:
-            existing_order = orderfile.readlines()
-    def get_for_image(image):
-        for line in existing_order:
-            if line.startswith(image.name):
-                return line.strip()
-        return None
-        
-    image_files = [MyImage(i) for i in glob(os.path.join(galdir, '*'))]
-    print("reading exif from {} files".format(len(image_files)))
-    for my_image in image_files:
-        my_image.add_order(get_for_image(my_image))
-
-    [my_image.fill_in() for my_image in image_files]
-
-    of = Orderfile(ORDER_FILE, reverse=reverse)
-    for item in image_files:
-        of.add_row(item.name, item.xdim, item.ydim, item.capture_time, os.path.basename(galdir))
+    order_path = Path(targets[0])
+    galname = os.path.basename(galdir)
+    images = {image.name: image for image in map(MyImage, gallery_photos(galdir))}
+    of = Orderfile(order_path, reverse=reverse)
+    if order_path.exists():
+        cached = Orderfile.from_file(order_path, galname).data
+        newest = order_path.stat().st_mtime_ns
+        for row in cached:
+            image = images.get(row['name'])
+            if image and row['galname'] == galname and os.stat(image.orig_file_path).st_mtime_ns <= newest:
+                of.data.append(row)
+                images.pop(row['name'])
+    for image in images.values():
+        image.fill_in()
+        of.add_row(image.name, image.xdim, image.ydim, image.capture_time, galname)
     of.write_file()
 
 class Orderfile:
@@ -394,7 +399,7 @@ class Orderfile:
              'capture_time': capture_time,
              'galname': galname})
 
-    def write_file(self, numrows=-1):
+    def write_file(self, numrows=None):
         lines = []
         for item in sorted(self.data,
                            key = lambda r: r['capture_time'],
@@ -405,26 +410,33 @@ class Orderfile:
                 item['ydim'],
                 sft(item['capture_time']),
                 item['galname']))
-        with open(self.filename, 'w') as f:
-            f.writelines(lines)
+        _write_if_changed(''.join(lines), self.filename)
         
     @classmethod
-    def from_file(cls, filename):
+    def from_file(cls, filename, galname=None):
         of = Orderfile(filename)
         with open(filename) as order:
-            for line in order.readlines():
-                of.add_row(*line.strip().split(','))
+            for line in order:
+                row = line.rstrip('\n').split(',')
+                if len(row) == 4 and galname:
+                    row.append(galname)
+                of.add_row(*row)
         return of
                 
 def make_photostream_glom_orderfile():
     data = []
-    for galdir in dirsonly(glob('content/galleries/*')):
+    for galdir in sorted(dirsonly(glob('content/galleries/*'))):
         galname = os.path.basename(galdir)
         f = os.path.join(ORDERFILE_LOCATION, '{}_order.txt'.format(galname))
-        orderfile = Orderfile.from_file(f)
+        orderfile = Orderfile.from_file(f, galname)
         data.extend(orderfile.data)
 
-    glom_orderfile = Orderfile(ORDERFILE_LOCATION + '/photostream_glom_order.txt', reverse=True)
+    glom_path = Path(ORDERFILE_LOCATION) / 'photostream_glom_order.txt'
+    if glom_path.exists():
+        previous = Orderfile.from_file(glom_path).data
+        positions = {(row['galname'], row['name']): index for index, row in enumerate(previous)}
+        data.sort(key=lambda row: positions.get((row['galname'], row['name']), len(positions)))
+    glom_orderfile = Orderfile(glom_path, reverse=True)
     for item in data:
         glom_orderfile.add_row(
             item['name'],
@@ -449,7 +461,7 @@ class MyImage():
     def __init__(self, orig_file_path):
         self.orig_file_path = orig_file_path
         self.filename = os.path.basename(self.orig_file_path)
-        self.name = self.filename.replace('.jpg', '')
+        self.name = Path(self.filename).stem
 
         self.image = None
         
@@ -457,47 +469,22 @@ class MyImage():
         self.ydim = None
         self.capture_time = None
 
-    def add_order(self, orderline):
-        if not orderline:
-            return
-
-        data = orderline.split(',')
-        if len(data) != 4:
-            return None
-
-        if data[0] != self.name:
-            raise Exception('collision: {} -{}- {}'.format(data, orderline, self.name))
-
-        self.xdim = data[1]
-        self.ydim = data[2]
-        self.capture_time = data[3]
-
     def get_capture_time(self, image):
         try:
-            d = image.datetime_original
-            return d
-        except (AttributeError, KeyError) as err:
-            # maybe this is a WA image with the date in the filename?
-            print("AttError for image {}".format(self.orig_file_path))
+            return sft(spt(image.datetime_original))
+        except (AttributeError, KeyError, TypeError, ValueError):
+            pass
+        try:
             if '-WA' in self.name:
-                maybe_dt = self.name.split('-')[1]
-                dt = datetime.strptime(maybe_dt, '%Y%m%d')
-                if dt:
-                    return sft(dt)
-            elif 'signal-' in self.name:
-                # maybe this is a signal image with the date in the filename?
-                dt = datetime.strptime(self.name, 'signal-%Y-%m-%d-%H%M%S')
-                if dt:
-                    return sft(dt)
-            elif 'WhatsApp_Image' in self.name:
-                # WhatsApp Image 2021-09-19 at 9.55.59 AM.jpg
-                dt = datetime.strptime(self.name, 'WhatsApp_Image_%Y-%m-%d_at_%H.%M.%S_%p')
-                if dt:
-                    return sft(dt)
-            else:
-                print("Image at {} has no EXIF for datetime.".format(self.orig_file_path))
-                return sft(datetime.now())
-        
+                return sft(datetime.strptime(self.name.split('-')[1], '%Y%m%d'))
+            if 'signal-' in self.name:
+                return sft(datetime.strptime(self.name, 'signal-%Y-%m-%d-%H%M%S'))
+            if 'WhatsApp_Image' in self.name:
+                return sft(datetime.strptime(self.name, 'WhatsApp_Image_%Y-%m-%d_at_%H.%M.%S_%p'))
+        except (IndexError, ValueError):
+            pass
+        return sft(datetime.utcfromtimestamp(os.stat(self.orig_file_path).st_mtime))
+
     def fill_in(self):
         if not all([self.xdim, self.ydim, self.capture_time]):
             print("Missing some metadata for {}, will grab...".format(self.orig_file_path))
@@ -507,12 +494,6 @@ class MyImage():
             except Exception as err:
                 raise Exception("couldn't get capture time for {}".format(self.orig_file_path))
 
-            dimen_cmd = "identify '{}'"
-            out = subprocess.check_output(dimen_cmd.format(_thumbpath(self.orig_file_path)),
-                                          shell=True).decode('UTF-8')
-            try:
-                print(dimen_cmd.format(_thumbpath(self.orig_file_path)), out.split()[2].split('x'))
-                self.xdim, self.ydim = out.split()[2].split('x')
-            except Exception as err:
-                raise Exception("couldn't get dimensions for {}, output was {}".format(self.orig_file_path, out))
-                
+            dimensions = subprocess.check_output(['magick', 'identify', '-ping', '-format', '%w %h',
+                                                   _thumbpath(self.orig_file_path)], text=True)
+            self.xdim, self.ydim = dimensions.split()

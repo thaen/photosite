@@ -5,57 +5,11 @@ import argparse
 import os
 import subprocess
 import tempfile
-from datetime import datetime, timezone
 from pathlib import Path
 
 
-class Entry:
-    def __init__(self, raw, key, mtime_ns=None, size=None):
-        self.raw = raw
-        self.key = key
-        self.mtime_ns = mtime_ns
-        self.size = size
-
-
-def parse_entry(line):
-    parts = line.rstrip("\n").split("\t")
-    key = parts[0]
-    mtime_ns = int(parts[1]) if len(parts) > 1 and parts[1] else None
-    size = int(parts[2]) if len(parts) > 2 and parts[2] else None
-    return Entry(line, key, mtime_ns, size)
-
-
-def queue_line(key, source):
-    st = source.stat()
-    return f"{key}\t{st.st_mtime_ns}\t{st.st_size}\n"
-
-
-def run_aws(args, aws, profile):
-    return subprocess.run([aws, "--profile", profile, *args], check=True, text=True, capture_output=True)
-
-
-def remote_is_current(args, entry, source):
-    if entry.mtime_ns is None or entry.size is None:
-        return False
-    try:
-        result = run_aws(["s3", "ls", f"s3://{args.bucket}/{entry.key}"], args.aws, args.profile)
-    except subprocess.CalledProcessError:
-        return False
-    line = result.stdout.strip()
-    if not line:
-        return False
-    parts = line.split(maxsplit=3)
-    if len(parts) < 4:
-        return False
-    remote_dt = datetime.fromisoformat(f"{parts[0]}T{parts[1]}+00:00")
-    remote_size = int(parts[2])
-    if remote_size != source.stat().st_size:
-        return False
-    queued_dt = datetime.fromtimestamp(entry.mtime_ns / 1_000_000_000, timezone.utc)
-    return remote_dt >= queued_dt
-
-
 def validate_source(site, key):
+    site = site.resolve()
     source = (site / key).resolve()
     if source.parent != site and site not in source.parents:
         raise RuntimeError(f"Upload path escapes site/: {key}")
@@ -68,8 +22,10 @@ def rewrite_queue(path, entries):
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp_name = tempfile.mkstemp(prefix=path.name + ".", dir=path.parent)
     with os.fdopen(fd, "w", encoding="utf-8") as tmp:
-        for entry in entries:
-            tmp.write(entry.raw if entry.raw.endswith("\n") else entry.raw + "\n")
+        for raw in entries:
+            tmp.write(raw if raw.endswith("\n") else raw + "\n")
+        tmp.flush()
+        os.fsync(tmp.fileno())
     Path(tmp_name).replace(path)
 
 
@@ -77,30 +33,27 @@ def upload(args):
     site = Path(args.site).resolve()
     queue = Path(args.list)
     raw_lines = queue.read_text(encoding="utf-8").splitlines(True) if queue.exists() else []
-    entries = [parse_entry(line) for line in raw_lines if line.strip()]
+    entries = {line.rstrip("\n").split("\t", 1)[0]: line for line in raw_lines if line.strip()}
     remaining = []
     uploaded = 0
-    skipped = 0
-    for entry in entries:
-        source = validate_source(site, entry.key)
+    for key, raw in entries.items():
+        source = validate_source(site, key)
         if args.dry_run:
-            print(f"{args.aws} --profile {args.profile} s3 cp --only-show-errors {source} s3://{args.bucket}/{entry.key}")
-            remaining.append(entry)
+            print(f"{args.aws} --profile {args.profile} s3 cp --only-show-errors {source} s3://{args.bucket}/{key}")
+            remaining.append(raw)
             continue
-        if remote_is_current(args, entry, source):
-            skipped += 1
-            continue
-        command = [args.aws, "--profile", args.profile, "s3", "cp", "--only-show-errors", str(source), f"s3://{args.bucket}/{entry.key}"]
+        command = [args.aws, "--profile", args.profile, "s3", "cp", "--only-show-errors", str(source), f"s3://{args.bucket}/{key}"]
         try:
             subprocess.run(command, check=True)
             uploaded += 1
         except subprocess.CalledProcessError:
-            remaining.append(entry)
+            remaining.append(raw)
     if not args.dry_run:
         rewrite_queue(queue, remaining)
-        print(f"Uploaded {uploaded} files. Skipped {skipped} current files. {len(remaining)} queued files remain.")
+        print(f"Uploaded {uploaded} files. {len(remaining)} queued files remain.")
     else:
         print(f"Would process {len(entries)} queued files.")
+    return 0 if args.dry_run or not remaining else 1
 
 
 def main():
@@ -113,10 +66,10 @@ def main():
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     try:
-        upload(args)
+        return upload(args)
     except (OSError, RuntimeError, subprocess.CalledProcessError) as error:
         parser.error(str(error))
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
