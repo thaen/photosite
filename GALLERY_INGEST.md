@@ -1,6 +1,6 @@
 # Scheduled gallery publishing
 
-The Photosite Mac runs the gallery worker at minutes 0, 15, 30, and 45 and on login.
+The Photosite Mac runs the gallery worker at the top of each hour and on login.
 It lists the source bucket's `galleries/` prefix. SQLite tracks input revisions,
 the last complete build state, and the output uploads still pending. A pending
 publication resumes before another build starts. Images upload before the HTML

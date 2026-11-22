@@ -424,7 +424,7 @@ def install_job(state, profile):
                              "--state", str(state), "--profile", profile],
         "WorkingDirectory": str(ROOT),
         "RunAtLoad": True,
-        "StartCalendarInterval": [{"Minute": minute} for minute in (0, 15, 30, 45)],
+        "StartCalendarInterval": {"Minute": 0},
         "EnvironmentVariables": {"PATH": "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"},
         "StandardOutPath": log_path,
         "StandardErrorPath": log_path,
@@ -443,7 +443,7 @@ def install_job(state, profile):
         else:
             plist.unlink()
         raise
-    log.info("Installed %s for quarter-hour runs", JOB)
+    log.info("Installed %s for hourly runs", JOB)
 
 
 def main():
